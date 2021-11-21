@@ -5,10 +5,10 @@ using Projects.Shared.Events;
 
 namespace Projects.Domain
 {
-    public class Project : BaseAggregateRoot<Project, Guid>
+    public class Project : BaseAggregateRoot<Guid, Project, Guid>
     {
-        public string Title { get; private set; }
-        public string Description { get; private set; }
+        public string? Title { get; private set; }
+        public string? Description { get; private set; }
         public DateTimeOffset? StartDate { get; private set; }
         public DateTimeOffset? EndDate { get; private set; }
         public DateTimeOffset? ActualStartDate { get; private set; }
@@ -20,15 +20,16 @@ namespace Projects.Domain
         {
         }
 
-        private Project(Guid projectId, string title, DateTimeOffset startDate) : base(projectId)
+        private Project(Guid tenantId, Guid projectId, string title, DateTimeOffset startDate) : base(tenantId,
+            projectId)
         {
             var pc = new ProjectCreated(this, title, startDate);
             AddEvent(pc);
         }
 
-        public static Project Initialize(Guid projectId, string title, DateTimeOffset startDate)
+        public static Project Initialize(Guid tenantId, Guid projectId, string title, DateTimeOffset startDate)
         {
-            return new Project(projectId, title, startDate);
+            return new Project(tenantId, projectId, title, startDate);
         }
 
         private bool IsWritable()
@@ -116,11 +117,12 @@ namespace Projects.Domain
             AddEvent(pprio);
         }
 
-        protected override void Apply(IDomainEvent<Guid> @event)
+        protected override void Apply(IDomainEvent<Guid, Guid> @event)
         {
             switch (@event)
             {
                 case ProjectCreated projectCreated:
+                    TenantId = projectCreated.TenantId;
                     Id = projectCreated.AggregateId;
                     Title = projectCreated.Title;
                     StartDate = projectCreated.StartDate;

@@ -2,11 +2,15 @@
 
 namespace Projects.Shared.Entity
 {
-    public abstract class DomainEntity<TKey> : BaseEntity<TKey>
+    public abstract class DomainEntity<TTenantId, TKey> : BaseEntity<TTenantId, TKey>
     {
-        protected DomainEntity() { }
+        protected DomainEntity()
+        {
+        }
 
-        protected DomainEntity(TKey id) : base(id) { }
+        protected DomainEntity(TTenantId tenantId, TKey id) : base(tenantId, id)
+        {
+        }
 
         public DateTimeOffset CreatedAt { get; protected set; }
         public DateTimeOffset? ModifiedAt { get; protected set; }

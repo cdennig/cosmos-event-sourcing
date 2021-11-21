@@ -5,9 +5,10 @@ using Projects.Shared.Events;
 
 namespace Projects.Shared.Aggregate
 {
-    public interface IAggregateRoot<out TKey> : IEntity<TKey>
+    public interface IAggregateRoot<out TTenantId, out TKey> : IEntity<TTenantId, TKey>
     {
-        IReadOnlyCollection<IDomainEvent<TKey>> DomainEvents { get; }
+        TTenantId TenantId { get; }
+        IReadOnlyCollection<IDomainEvent<TTenantId, TKey>> DomainEvents { get; }
         long Version { get; }
         void ClearEvents();
     }

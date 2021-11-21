@@ -4,7 +4,7 @@ using Projects.Shared.Events;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectFinished : BaseDomainEvent<Project, Guid>
+    public class ProjectFinished : BaseDomainEvent<Guid, Project, Guid>
     {
         public ProjectFinished(Project project, DateTimeOffset actualEndDate) : base(project)
         {
@@ -13,8 +13,9 @@ namespace Projects.Domain.Events
             ActualEndDate = actualEndDate;
         }
 
-        private ProjectFinished(string aggregateType, Guid aggregateId, long version, DateTimeOffset timestamp) : base(
-            aggregateType, aggregateId, version, timestamp)
+        private ProjectFinished(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+            DateTimeOffset timestamp) : base(
+            aggregateType, tenantId, aggregateId, version, timestamp)
         {
         }
 

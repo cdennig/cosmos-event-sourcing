@@ -4,7 +4,7 @@ using Projects.Shared.Events;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectDescriptionsUpdated : BaseDomainEvent<Project, Guid>
+    public class ProjectDescriptionsUpdated : BaseDomainEvent<Guid, Project, Guid>
     {
         public ProjectDescriptionsUpdated(Project project, string title, string description) : base(project)
         {
@@ -12,8 +12,9 @@ namespace Projects.Domain.Events
             Description = description;
         }
 
-        private ProjectDescriptionsUpdated(string aggregateType, Guid aggregateId, long version, DateTimeOffset timestamp) : base(
-            aggregateType, aggregateId, version, timestamp)
+        private ProjectDescriptionsUpdated(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+            DateTimeOffset timestamp) : base(
+            aggregateType, tenantId, aggregateId, version, timestamp)
         {
         }
 

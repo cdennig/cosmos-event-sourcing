@@ -1,7 +1,8 @@
 ﻿namespace Projects.Shared.Entity
 {
-    public interface IEntity<out TKey>
+    public interface IEntity<out TTenantId, out TKey>
     {
+        TTenantId TenantId { get; }
         TKey Id { get; }
     }
 }

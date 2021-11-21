@@ -4,7 +4,7 @@ using Projects.Shared.Events;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectPriorityUpdated : BaseDomainEvent<Project, Guid>
+    public class ProjectPriorityUpdated : BaseDomainEvent<Guid, Project, Guid>
     {
         public ProjectPriorityUpdated(Project project, ProjectPriority priority) : base(project)
         {
@@ -12,8 +12,9 @@ namespace Projects.Domain.Events
             OldPriority = project.Priority;
         }
 
-        private ProjectPriorityUpdated(string aggregateType, Guid aggregateId, long version, DateTimeOffset timestamp) : base(
-            aggregateType, aggregateId, version, timestamp)
+        private ProjectPriorityUpdated(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+            DateTimeOffset timestamp) : base(
+            aggregateType, tenantId, aggregateId, version, timestamp)
         {
         }
 

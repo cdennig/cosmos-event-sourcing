@@ -4,7 +4,7 @@ using Projects.Shared.Events;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectPaused : BaseDomainEvent<Project, Guid>
+    public class ProjectPaused : BaseDomainEvent<Guid, Project, Guid>
     {
         public ProjectPaused(Project project) : base(project)
         {
@@ -12,8 +12,9 @@ namespace Projects.Domain.Events
             OldStatus = project.Status;
         }
 
-        private ProjectPaused(string aggregateType, Guid aggregateId, long version, DateTimeOffset timestamp) : base(
-            aggregateType, aggregateId, version, timestamp)
+        private ProjectPaused(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+            DateTimeOffset timestamp) : base(
+            aggregateType, tenantId, aggregateId, version, timestamp)
         {
         }
 

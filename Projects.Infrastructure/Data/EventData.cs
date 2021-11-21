@@ -3,9 +3,10 @@ using Projects.Shared.Events;
 
 namespace Projects.Infrastructure.Data
 {
-    public class EventData<TKey>
+    public class EventData<TTenantId, TKey>
     {
         public Guid Id { get; }
+        public TTenantId TenantId { get; }
         public string PartitionKey { get; }
         public string Type { get; } = "EVENT";
         public string EventType { get; }
@@ -13,9 +14,9 @@ namespace Projects.Infrastructure.Data
         public string AggregateType { get; }
         public long Version { get; }
         public DateTimeOffset Timestamp { get; }
-        public IDomainEvent<TKey> @Event { get; }
+        public IDomainEvent<TTenantId, TKey> @Event { get; }
 
-        public EventData(IDomainEvent<TKey> @event)
+        public EventData(IDomainEvent<TTenantId, TKey> @event)
         {
             Id = Guid.NewGuid();
             PartitionKey = @event.AggregateId.ToString();

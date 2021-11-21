@@ -4,10 +4,11 @@ using Projects.Shared.Events;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectDatesUpdated : BaseDomainEvent<Project, Guid>
+    public class ProjectDatesUpdated : BaseDomainEvent<Guid, Project, Guid>
     {
-        private ProjectDatesUpdated(string aggregateType, Guid aggregateId, long version, DateTimeOffset timestamp) : base(
-            aggregateType, aggregateId, version, timestamp)
+        private ProjectDatesUpdated(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+            DateTimeOffset timestamp) : base(
+            aggregateType, tenantId, aggregateId, version, timestamp)
         {
         }
 

@@ -4,12 +4,13 @@ using Projects.Shared.Aggregate;
 
 namespace Projects.Shared.Events
 {
-    public abstract class BaseDomainEvent<TA, TKey> : IDomainEvent<TKey>
-        where TA : IAggregateRoot<TKey>
+    public abstract class BaseDomainEvent<TTenantId, TA, TKey> : IDomainEvent<TTenantId, TKey>
+        where TA : IAggregateRoot<TTenantId, TKey>
     {
-        protected BaseDomainEvent(string aggregateType, TKey aggregateId,
+        protected BaseDomainEvent(string aggregateType, TTenantId tenantId, TKey aggregateId,
             long version, DateTimeOffset timestamp)
         {
+            TenantId = tenantId;
             AggregateId = aggregateId;
             AggregateType = aggregateType;
             Version = version;
@@ -21,6 +22,7 @@ namespace Projects.Shared.Events
             if (aggregateRoot is null)
                 throw new ArgumentNullException(nameof(aggregateRoot));
 
+            TenantId = aggregateRoot.TenantId;
             Version = aggregateRoot.Version;
             AggregateId = aggregateRoot.Id;
             AggregateType = typeof(TA).Name.ToLower();
@@ -28,6 +30,7 @@ namespace Projects.Shared.Events
         }
 
         [JsonIgnore] public long Version { get; private set; }
+        [JsonIgnore] public TTenantId TenantId { get; private set; }
         [JsonIgnore] public TKey AggregateId { get; private set; }
         [JsonIgnore] public string AggregateType { get; private set; }
         [JsonIgnore] public DateTimeOffset Timestamp { get; private set; }

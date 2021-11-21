@@ -14,8 +14,8 @@ using Projects.Shared.Repository;
 
 namespace Projects.Infrastructure.Repository
 {
-    public class CosmosEventsRepository<TA, TKey> : IEventsRepository<TA, TKey>
-        where TA : class, IAggregateRoot<TKey>
+    public class CosmosEventsRepository<TTenantId, TA, TKey> : IEventsRepository<TTenantId, TA, TKey>
+        where TA : class, IAggregateRoot<TTenantId, TKey>
     {
         private readonly Container _eventsContainer;
 
@@ -37,7 +37,7 @@ namespace Projects.Infrastructure.Repository
             var tb = _eventsContainer.CreateTransactionalBatch(pk);
             foreach (var @event in domainEvents)
             {
-                var ed = new EventData<TKey>(@event);
+                var ed = new EventData<TTenantId, TKey>(@event);
                 tb.CreateItem(ed, new TransactionalBatchItemRequestOptions()
                 {
                     EnableContentResponseOnWrite = false
@@ -47,15 +47,17 @@ namespace Projects.Infrastructure.Repository
             var tbResult = await tb.ExecuteAsync();
         }
 
-        public async Task<TA> RehydrateAsync(TKey key)
+        public async Task<TA> RehydrateAsync(TTenantId tenantId, TKey key)
         {
             var pk = new PartitionKey(key.ToString());
 
-            var events = new List<IDomainEvent<TKey>>();
+            var events = new List<IDomainEvent<TTenantId, TKey>>();
 
-            const string sqlQueryText = "SELECT * FROM c WHERE c.type = @type ORDER BY c.version ASC";
+            const string sqlQueryText =
+                "SELECT * FROM c WHERE c.type = @type AND c.tenantId = @tenantId ORDER BY c.version ASC";
 
-            var queryDefinition = new QueryDefinition(sqlQueryText).WithParameter("@type", "EVENT");
+            var queryDefinition = new QueryDefinition(sqlQueryText).WithParameter("@type", "EVENT")
+                .WithParameter("@tenantId", tenantId.ToString());
 
             var feedIterator =
                 _eventsContainer.GetItemQueryStreamIterator(queryDefinition,
@@ -79,17 +81,18 @@ namespace Projects.Infrastructure.Repository
                 }
             }
 
-            var aggregateRoot = BaseAggregateRoot<TA, TKey>.Create(events);
+            var aggregateRoot = BaseAggregateRoot<TTenantId, TA, TKey>.Create(events);
             return aggregateRoot;
         }
 
-        private IDomainEvent<TKey> DeserializeEvent(string eventType, string aggregateId, string aggregateType,
+        private IDomainEvent<TTenantId, TKey> DeserializeEvent(string eventType, string aggregateId,
+            string aggregateType,
             string timestamp, long version, JObject rawEvent)
         {
             var ci = GetConstructorInfo(eventType);
             var @event = ci.Invoke(new object[]
                     {aggregateType, Guid.Parse(aggregateId), version, DateTimeOffset.Parse(timestamp)}) as
-                IDomainEvent<TKey>;
+                IDomainEvent<TTenantId, TKey>;
             JsonConvert.PopulateObject(rawEvent.ToString(), @event);
             return @event;
         }
@@ -111,10 +114,10 @@ namespace Projects.Infrastructure.Repository
 
             var ci = eType.GetConstructor(
                 BindingFlags.Instance | BindingFlags.NonPublic,
-                new[] {typeof(string), typeof(TKey), typeof(long), typeof(DateTimeOffset)});
-            
+                new[] {typeof(string), typeof(TTenantId), typeof(TKey), typeof(long), typeof(DateTimeOffset)});
+
             _eventConstructors.Add(eventType, ci);
-            
+
             return ci;
         }
     }

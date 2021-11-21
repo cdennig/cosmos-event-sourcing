@@ -4,13 +4,14 @@ using Projects.Shared.Events;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectCreated : BaseDomainEvent<Project, Guid>
+    public class ProjectCreated : BaseDomainEvent<Guid, Project, Guid>
     {
         [JsonProperty] public string Title { get; private set; }
         [JsonProperty] public DateTimeOffset StartDate { get; private set; }
 
-        private ProjectCreated(string aggregateType, Guid aggregateId, long version, DateTimeOffset timestamp) : base(
-            aggregateType, aggregateId, version, timestamp)
+        private ProjectCreated(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+            DateTimeOffset timestamp) : base(
+            aggregateType, tenantId, aggregateId, version, timestamp)
         {
         }
 
