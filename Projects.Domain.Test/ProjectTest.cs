@@ -7,7 +7,7 @@ namespace Projects.Domain.Test
     public class ProjectTest
     {
         [Fact]
-        public void Test1()
+        public void TestWorkflow()
         {
             var p = Project.Initialize(Guid.NewGuid(), "Test Project", DateTimeOffset.UtcNow);
             p.SetDescriptions("New Title", "New description");
@@ -16,6 +16,24 @@ namespace Projects.Domain.Test
             p.PauseProject();
             p.ResumeProject();
             p.FinishProject();
+        }
+        
+        [Fact]
+        public void TestPriority()
+        {
+            var p = Project.Initialize(Guid.NewGuid(), "Test Project", DateTimeOffset.UtcNow);
+            p.SetPriority(ProjectPriority.VeryHigh);
+            Assert.Equal(ProjectPriority.VeryHigh, p.Priority);
+        }
+        
+        [Fact]
+        public void TestProjectReadOnly()
+        {
+            var p = Project.Initialize(Guid.NewGuid(), "Test Project", DateTimeOffset.UtcNow);
+            p.StartProject();
+            p.FinishProject();
+            void Action() => p.SetDescriptions("Should throw", "an exception");
+            Assert.Throws<Exception>(Action);
         }
         
         [Fact]

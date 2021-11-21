@@ -11,12 +11,14 @@ namespace Projects.Domain
         public string Description { get; private set; }
         public DateTimeOffset? StartDate { get; private set; }
         public DateTimeOffset? EndDate { get; private set; }
-
         public DateTimeOffset? ActualStartDate { get; private set; }
         public DateTimeOffset? ActualEndDate { get; private set; }
-        public ProjectStatus Status { get; set; }
+        public ProjectStatus Status { get; private set; }
+        public ProjectPriority Priority { get; private set; }
 
-        private Project() { }
+        private Project()
+        {
+        }
 
         private Project(Guid projectId, string title, DateTimeOffset startDate) : base(projectId)
         {
@@ -27,6 +29,23 @@ namespace Projects.Domain
         public static Project Initialize(Guid projectId, string title, DateTimeOffset startDate)
         {
             return new Project(projectId, title, startDate);
+        }
+
+        private bool IsWritable()
+        {
+            switch (Status)
+            {
+                case ProjectStatus.Cancelled:
+                case ProjectStatus.Finished:
+                    return false;
+                case ProjectStatus.New:
+                case ProjectStatus.Started:
+                case ProjectStatus.Paused:
+                case ProjectStatus.Resumed:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         public void StartProject()
@@ -53,7 +72,6 @@ namespace Projects.Domain
             AddEvent(pc);
         }
 
-
         public void ResumeProject()
         {
             if (Status != ProjectStatus.Paused)
@@ -74,6 +92,8 @@ namespace Projects.Domain
         {
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Project title cannot be empty.");
+            if (!IsWritable())
+                throw new Exception("Project readonly");
             var pdes = new ProjectDescriptionsUpdated(this, title, description);
             AddEvent(pdes);
         }
@@ -82,10 +102,20 @@ namespace Projects.Domain
         {
             if (endDate <= startDate)
                 throw new ArgumentException("Project end date cannot be lower than start date.");
+            if (!IsWritable())
+                throw new Exception("Project readonly");
             var pdates = new ProjectDatesUpdated(this, startDate, endDate);
             AddEvent(pdates);
         }
-        
+
+        public void SetPriority(ProjectPriority priority)
+        {
+            if (!IsWritable())
+                throw new Exception("Project readonly");
+            var pprio = new ProjectPriorityUpdated(this, priority);
+            AddEvent(pprio);
+        }
+
         protected override void Apply(IDomainEvent<Guid> @event)
         {
             switch (@event)
@@ -95,6 +125,7 @@ namespace Projects.Domain
                     Title = projectCreated.Title;
                     StartDate = projectCreated.StartDate;
                     Status = ProjectStatus.New;
+                    Priority = ProjectPriority.Medium;
                     CreatedAt = projectCreated.Timestamp;
                     break;
                 case ProjectStarted projectStarted:
@@ -129,6 +160,10 @@ namespace Projects.Domain
                     StartDate = projectDatesUpdated.StartDate;
                     EndDate = projectDatesUpdated.EndDate;
                     ModifiedAt = projectDatesUpdated.Timestamp;
+                    break;
+                case ProjectPriorityUpdated projectPriorityUpdated:
+                    Priority = projectPriorityUpdated.NewPriority;
+                    ModifiedAt = projectPriorityUpdated.Timestamp;
                     break;
             }
         }

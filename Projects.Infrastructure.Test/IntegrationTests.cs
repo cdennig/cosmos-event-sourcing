@@ -36,5 +36,19 @@ namespace Projects.Infrastructure.Test
             p.SetDescriptions("My new Title", "My new Description");
             await cer.AppendAsync(p);
         }
+        
+        [Fact]
+        public async void TestRehydrate2()
+        {
+            var cer = new CosmosEventsRepository<Project, Guid>(_fixture.Container);
+            var p = await cer.RehydrateAsync(Guid.Parse("abd9e633-9b35-4e5b-a47b-8db8c6542b4b"));
+        }
+        
+        [Fact]
+        public async void TestRehydrate3()
+        {
+            var cer = new CosmosEventsRepository<Project, Guid>(_fixture.Container);
+            var p = await cer.RehydrateAsync(Guid.Parse("abd9e633-9b35-4e5b-a47b-8db8c6542b4b"));
+        }
     }
 }

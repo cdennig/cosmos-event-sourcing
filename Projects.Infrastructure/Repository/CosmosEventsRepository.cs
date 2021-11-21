@@ -19,12 +19,8 @@ namespace Projects.Infrastructure.Repository
     {
         private readonly Container _eventsContainer;
 
-        private Assembly[] _assemblies;
-
-        private readonly JsonSerializerSettings JsonSerializerSettings = new()
-        {
-            ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
-        };
+        private readonly List<Assembly> _assemblies = new();
+        private readonly Dictionary<string, ConstructorInfo> _eventConstructors = new();
 
         public CosmosEventsRepository(Container eventsContainer)
         {
@@ -90,9 +86,24 @@ namespace Projects.Infrastructure.Repository
         private IDomainEvent<TKey> DeserializeEvent(string eventType, string aggregateId, string aggregateType,
             string timestamp, long version, JObject rawEvent)
         {
-            if (_assemblies == null)
+            var ci = GetConstructorInfo(eventType);
+            var @event = ci.Invoke(new object[]
+                    {aggregateType, Guid.Parse(aggregateId), version, DateTimeOffset.Parse(timestamp)}) as
+                IDomainEvent<TKey>;
+            JsonConvert.PopulateObject(rawEvent.ToString(), @event);
+            return @event;
+        }
+
+        private ConstructorInfo GetConstructorInfo(string eventType)
+        {
+            if (_assemblies.Count == 0)
             {
-                _assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                _assemblies.AddRange(AppDomain.CurrentDomain.GetAssemblies());
+            }
+
+            if (_eventConstructors.ContainsKey(eventType))
+            {
+                return _eventConstructors[eventType];
             }
 
             var eType = _assemblies.Select(a => a.GetType(eventType, false))
@@ -101,14 +112,10 @@ namespace Projects.Infrastructure.Repository
             var ci = eType.GetConstructor(
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 new[] {typeof(string), typeof(TKey), typeof(long), typeof(DateTimeOffset)});
-            var @event = ci.Invoke(new object[]
-                    {aggregateType, Guid.Parse(aggregateId), version, DateTimeOffset.Parse(timestamp)}) as
-                IDomainEvent<TKey>;
-            JsonConvert.PopulateObject(rawEvent.ToString(), @event);
-            // var @event =
-            //     JsonConvert.DeserializeObject(rawEvent.ToString(), eType, JsonSerializerSettings) as IDomainEvent<TKey>;
-
-            return @event;
+            
+            _eventConstructors.Add(eventType, ci);
+            
+            return ci;
         }
     }
 }
