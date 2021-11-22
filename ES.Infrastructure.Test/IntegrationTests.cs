@@ -15,24 +15,33 @@ namespace ES.Infrastructure.Test
             _fixture = fixture;
         }
         
-        [Fact]
-        public async void Test_001_Hydrate()
-        {
-            var cer = new CosmosEventsRepository<Guid, Project, Guid>(_fixture.Container);
-            var p = Project.Initialize(_fixture.TenantId, _fixture.CurrentId,"Test Project", DateTimeOffset.UtcNow);
-            p.SetDescriptions("New Title", "New description");
-            p.SetDates(DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
-            p.StartProject();
-            p.PauseProject();
-            p.ResumeProject();
-            await cer.AppendAsync(p);
-        }
+        // [Fact]
+        // public async void Test_001_Hydrate()
+        // {
+        //     var cer = new CosmosEventsRepository<Guid, Project, Guid>(_fixture.Container);
+        //     var p = Project.Initialize(_fixture.TenantId, _fixture.CurrentId,"Test Project", DateTimeOffset.UtcNow);
+        //     p.SetDescriptions("New Title", "New description");
+        //     p.SetDates(DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
+        //     p.StartProject();
+        //     p.PauseProject();
+        //     p.ResumeProject();
+        //     await cer.AppendAsync(p);
+        // }
         
         [Fact]
         public async void Test_002_Rehydrate()
         {
             var cer = new CosmosEventsRepository<Guid, Project, Guid>(_fixture.Container);
             var p = await cer.RehydrateAsync(_fixture.TenantId,_fixture.CurrentId);
+        }
+        
+        [Fact]
+        public async void Test_003_AppendToExistingProject()
+        {
+            var cer = new CosmosEventsRepository<Guid, Project, Guid>(_fixture.Container);
+            var p = await cer.RehydrateAsync(_fixture.TenantId,_fixture.CurrentId);
+            p.SetPriority(ProjectPriority.High);
+            await cer.AppendAsync(p);
         }
         
         

@@ -20,6 +20,5 @@ namespace Projects.Domain.Events
 
         [JsonProperty] public ProjectPriority NewPriority { get; set; }
         [JsonProperty] public ProjectPriority OldPriority { get; set; }
-        public override string ResourceId => $"/org/{TenantId}/project/{AggregateId}";
     }
 }

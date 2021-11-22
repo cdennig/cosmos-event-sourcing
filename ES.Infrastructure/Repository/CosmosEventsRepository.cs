@@ -32,9 +32,25 @@ namespace ES.Infrastructure.Repository
         public async Task AppendAsync(TA aggregateRoot)
         {
             var domainEvents = aggregateRoot.DomainEvents;
+
+            if (domainEvents.Count == 0) return;
+
             var pk = new PartitionKey(aggregateRoot.Id.ToString());
 
-            // _eventsContainer.GetItemQueryIterator<EventData<TKey>>(new QueryDefinition("SELECT "));
+            const string sqlQueryText =
+                "SELECT VALUE(MAX(c.version)) FROM c  WHERE c.type = @type AND c.tenantId = @tenantId";
+
+            var queryDefinition = new QueryDefinition(sqlQueryText).WithParameter("@type", "EVENT")
+                .WithParameter("@tenantId", aggregateRoot.TenantId.ToString());
+
+            var fi = _eventsContainer.GetItemQueryIterator<long>(queryDefinition, null,
+                new QueryRequestOptions { PartitionKey = pk });
+
+            var maxVersion = 0L;
+            var nextVersion = domainEvents.First().Version;
+            if (fi.HasMoreResults) maxVersion = (await fi.ReadNextAsync()).SingleOrDefault();
+
+            if (maxVersion >= nextVersion) throw new ApplicationException("Version mismatch!");
 
             var tb = _eventsContainer.CreateTransactionalBatch(pk);
             foreach (var @event in domainEvents)
@@ -47,6 +63,11 @@ namespace ES.Infrastructure.Repository
             }
 
             var tbResult = await tb.ExecuteAsync();
+
+            if (!tbResult.IsSuccessStatusCode)
+            {
+                throw new ApplicationException("Unable to save events.");
+            }
         }
 
         public async Task<TA> RehydrateAsync(TTenantId tenantId, TKey id)
@@ -93,8 +114,8 @@ namespace ES.Infrastructure.Repository
                 {
                     aggregateType,
                     TypeDescriptor.GetConverter(typeof(TTenantId)).ConvertFromString(tenantId),
-                    TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromString(aggregateId), 
-                    version, 
+                    TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromString(aggregateId),
+                    version,
                     DateTimeOffset.Parse(timestamp)
                 }) as
                 IDomainEvent<TTenantId, TKey>;
@@ -116,6 +137,9 @@ namespace ES.Infrastructure.Repository
 
             var eType = _assemblies.Select(a => a.GetType(eventType, false))
                 .FirstOrDefault(t => t != null) ?? Type.GetType(eventType);
+
+            if (eType == null)
+                throw new ArgumentException("Event type not found", eventType);
 
             var ci = eType.GetConstructor(
                 BindingFlags.Instance | BindingFlags.NonPublic,

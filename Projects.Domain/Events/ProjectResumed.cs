@@ -21,6 +21,5 @@ namespace Projects.Domain.Events
         [JsonProperty] public ProjectStatus NewStatus { get; set; }
 
         [JsonProperty] public ProjectStatus OldStatus { get; set; }
-        public override string ResourceId => $"/org/{TenantId}/project/{AggregateId}";
     }
 }

@@ -34,6 +34,5 @@ namespace ES.Shared.Events
         [JsonIgnore] public TKey AggregateId { get; private set; }
         [JsonIgnore] public string AggregateType { get; private set; }
         [JsonIgnore] public DateTimeOffset Timestamp { get; private set; }
-        [JsonIgnore] public abstract string ResourceId { get; }
     }
 }

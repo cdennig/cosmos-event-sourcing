@@ -20,7 +20,5 @@ namespace Projects.Domain.Events
 
         [JsonProperty] public DateTimeOffset EndDate { get; set; }
         [JsonProperty] public DateTimeOffset StartDate { get; set; }
-        
-        public override string ResourceId => $"/org/{TenantId}/project/{AggregateId}";
     }
 }

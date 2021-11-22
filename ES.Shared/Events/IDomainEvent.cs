@@ -9,6 +9,5 @@ namespace ES.Shared.Events
         public string AggregateType { get; }
         long Version { get; }
         DateTimeOffset Timestamp { get; }
-        string ResourceId { get; }
     }
 }

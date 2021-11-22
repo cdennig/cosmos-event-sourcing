@@ -15,7 +15,5 @@ namespace Projects.Domain.Events
         public ProjectUndeleted(Project project) : base(project)
         {
         }
-        
-        public override string ResourceId => $"/org/{TenantId}/project/{AggregateId}";
     }
 }

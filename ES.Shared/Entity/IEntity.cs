@@ -4,5 +4,6 @@
     {
         TTenantId TenantId { get; }
         TKey Id { get; }
+        string ResourceId { get; }
     }
 }

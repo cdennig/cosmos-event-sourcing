@@ -7,7 +7,6 @@ namespace ES.Infrastructure.Data
     {
         public Guid Id { get; }
         public TTenantId TenantId { get; }
-        public string ResourceId { get; }
         public string PartitionKey { get; }
         public string Type => "EVENT";
         public string? EventType { get; }
@@ -21,7 +20,6 @@ namespace ES.Infrastructure.Data
         {
             Id = Guid.NewGuid();
             TenantId = @event.TenantId;
-            ResourceId = @event.ResourceId;
             PartitionKey = @event.AggregateId.ToString();
             EventType = @event.GetType().FullName;
             AggregateId = @event.AggregateId;
