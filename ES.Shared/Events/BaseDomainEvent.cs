@@ -1,8 +1,8 @@
 ﻿using System;
+using ES.Shared.Aggregate;
 using Newtonsoft.Json;
-using Projects.Shared.Aggregate;
 
-namespace Projects.Shared.Events
+namespace ES.Shared.Events
 {
     public abstract class BaseDomainEvent<TTenantId, TA, TKey> : IDomainEvent<TTenantId, TKey>
         where TA : IAggregateRoot<TTenantId, TKey>
@@ -34,5 +34,6 @@ namespace Projects.Shared.Events
         [JsonIgnore] public TKey AggregateId { get; private set; }
         [JsonIgnore] public string AggregateType { get; private set; }
         [JsonIgnore] public DateTimeOffset Timestamp { get; private set; }
+        [JsonIgnore] public abstract string ResourceId { get; }
     }
 }

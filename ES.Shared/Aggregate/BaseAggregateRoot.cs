@@ -4,21 +4,17 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
-using Projects.Shared.Entity;
-using Projects.Shared.Events;
+using ES.Shared.Entity;
+using ES.Shared.Events;
 
-namespace Projects.Shared.Aggregate
+namespace ES.Shared.Aggregate
 {
     public abstract class BaseAggregateRoot<TTenantId, TA, TKey> : DomainEntity<TTenantId, TKey>,
         IAggregateRoot<TTenantId, TKey>
         where TA : class, IAggregateRoot<TTenantId, TKey>
     {
         private readonly ConcurrentQueue<IDomainEvent<TTenantId, TKey>> _events = new();
-
-        protected BaseAggregateRoot()
-        {
-        }
-
+        
         protected BaseAggregateRoot(TTenantId tenantId, TKey id) : base(tenantId, id)
         {
         }
@@ -52,18 +48,23 @@ namespace Projects.Shared.Aggregate
         {
             var aggregateType = typeof(TA);
             ConstructorInfo = aggregateType.GetConstructor(
-                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public,
-                null, new Type[0], new ParameterModifier[0]);
+                                  BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public,
+                                  null, new[] { typeof(TTenantId), typeof(TKey) }, Array.Empty<ParameterModifier>()) ??
+                              throw new InvalidOperationException();
             if (null == ConstructorInfo)
                 throw new InvalidOperationException(
-                    $"Unable to find required private parameterless constructor for Aggregate of type '{aggregateType.Name}'");
+                    $"Unable to find required private constructor for Aggregate of type '{aggregateType.Name}'");
         }
 
-        public static TA Create(IEnumerable<IDomainEvent<TTenantId, TKey>> events)
+        public static TA Create(TTenantId tenantId, TKey id, IEnumerable<IDomainEvent<TTenantId, TKey>> events)
         {
+            if (null == tenantId)
+                throw new ArgumentNullException(nameof(tenantId));
+            if (null == id)
+                throw new ArgumentNullException(nameof(id));
             if (null == events || !events.Any())
                 throw new ArgumentNullException(nameof(events));
-            var result = (TA) ConstructorInfo.Invoke(Array.Empty<object>());
+            var result = (TA)ConstructorInfo.Invoke(new object[] { tenantId, id });
 
             if (result is BaseAggregateRoot<TTenantId, TA, TKey> baseAggregate)
                 foreach (var @event in events)

@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using Projects.Shared.Entity;
-using Projects.Shared.Events;
+using ES.Shared.Entity;
+using ES.Shared.Events;
 
-namespace Projects.Shared.Aggregate
+namespace ES.Shared.Aggregate
 {
     public interface IAggregateRoot<out TTenantId, out TKey> : IEntity<TTenantId, TKey>
     {
-        TTenantId TenantId { get; }
         IReadOnlyCollection<IDomainEvent<TTenantId, TKey>> DomainEvents { get; }
         long Version { get; }
         void ClearEvents();

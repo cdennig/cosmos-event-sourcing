@@ -1,6 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
-using Projects.Shared.Events;
+using ES.Shared.Events;
 
 namespace Projects.Domain.Events
 {
@@ -20,5 +20,7 @@ namespace Projects.Domain.Events
 
         [JsonProperty] public DateTimeOffset EndDate { get; set; }
         [JsonProperty] public DateTimeOffset StartDate { get; set; }
+        
+        public override string ResourceId => $"/org/{TenantId}/project/{AggregateId}";
     }
 }

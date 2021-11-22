@@ -5,6 +5,8 @@
         <Nullable>enable</Nullable>
 
         <IsPackable>false</IsPackable>
+
+        <RootNamespace>Projects.Infrastructure.Test</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -25,7 +27,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Projects.Domain\Projects.Domain.csproj" />
-      <ProjectReference Include="..\Projects.Infrastructure\Projects.Infrastructure.csproj" />
+      <ProjectReference Include="..\ES.Infrastructure\ES.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>

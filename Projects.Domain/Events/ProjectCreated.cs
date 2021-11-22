@@ -1,14 +1,11 @@
 ﻿using System;
+using ES.Shared.Events;
 using Newtonsoft.Json;
-using Projects.Shared.Events;
 
 namespace Projects.Domain.Events
 {
     public class ProjectCreated : BaseDomainEvent<Guid, Project, Guid>
     {
-        [JsonProperty] public string Title { get; private set; }
-        [JsonProperty] public DateTimeOffset StartDate { get; private set; }
-
         private ProjectCreated(string aggregateType, Guid tenantId, Guid aggregateId, long version,
             DateTimeOffset timestamp) : base(
             aggregateType, tenantId, aggregateId, version, timestamp)
@@ -20,5 +17,9 @@ namespace Projects.Domain.Events
             Title = title;
             StartDate = startDate;
         }
+
+        [JsonProperty] public string Title { get; private set; }
+        [JsonProperty] public DateTimeOffset StartDate { get; private set; }
+        public override string ResourceId => $"/org/{TenantId}/project/{AggregateId}";
     }
 }

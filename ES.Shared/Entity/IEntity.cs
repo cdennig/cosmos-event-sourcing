@@ -1,4 +1,4 @@
-﻿namespace Projects.Shared.Entity
+﻿namespace ES.Shared.Entity
 {
     public interface IEntity<out TTenantId, out TKey>
     {

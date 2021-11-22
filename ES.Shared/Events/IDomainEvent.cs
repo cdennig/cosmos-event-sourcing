@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Projects.Shared.Events
+namespace ES.Shared.Events
 {
     public interface IDomainEvent<out TTenantId, out TKey>
     {
@@ -9,5 +9,6 @@ namespace Projects.Shared.Events
         public string AggregateType { get; }
         long Version { get; }
         DateTimeOffset Timestamp { get; }
+        string ResourceId { get; }
     }
 }

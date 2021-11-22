@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using ES.Infrastructure.Data;
 using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Projects.Infrastructure.Data;
-using Projects.Shared.Aggregate;
-using Projects.Shared.Events;
-using Projects.Shared.Repository;
+using ES.Shared.Aggregate;
+using ES.Shared.Events;
+using ES.Shared.Repository;
+using Container = Microsoft.Azure.Cosmos.Container;
 
-namespace Projects.Infrastructure.Repository
+namespace ES.Infrastructure.Repository
 {
     public class CosmosEventsRepository<TTenantId, TA, TKey> : IEventsRepository<TTenantId, TA, TKey>
         where TA : class, IAggregateRoot<TTenantId, TKey>
@@ -38,7 +40,7 @@ namespace Projects.Infrastructure.Repository
             foreach (var @event in domainEvents)
             {
                 var ed = new EventData<TTenantId, TKey>(@event);
-                tb.CreateItem(ed, new TransactionalBatchItemRequestOptions()
+                tb.CreateItem(ed, new TransactionalBatchItemRequestOptions
                 {
                     EnableContentResponseOnWrite = false
                 });
@@ -47,9 +49,9 @@ namespace Projects.Infrastructure.Repository
             var tbResult = await tb.ExecuteAsync();
         }
 
-        public async Task<TA> RehydrateAsync(TTenantId tenantId, TKey key)
+        public async Task<TA> RehydrateAsync(TTenantId tenantId, TKey id)
         {
-            var pk = new PartitionKey(key.ToString());
+            var pk = new PartitionKey(id.ToString());
 
             var events = new List<IDomainEvent<TTenantId, TKey>>();
 
@@ -72,26 +74,29 @@ namespace Projects.Infrastructure.Repository
                 using JsonTextReader jtr = new(sr);
                 JObject result = await JObject.LoadAsync(jtr);
                 var documents = result["Documents"];
-                foreach (var document in documents)
-                {
-                    events.Add(DeserializeEvent(document["eventType"].ToString(), document["aggregateId"].ToString(),
-                        document["aggregateType"].ToString(), document["timestamp"].ToString(),
-                        (long) document["version"],
-                        (JObject) document["event"]));
-                }
+                events.AddRange(documents.Select(document => DeserializeEvent(document["eventType"].ToString(),
+                    document["tenantId"].ToString(),
+                    document["aggregateId"].ToString(), document["aggregateType"].ToString(),
+                    document["timestamp"].ToString(), (long)document["version"], (JObject)document["event"])));
             }
 
-            var aggregateRoot = BaseAggregateRoot<TTenantId, TA, TKey>.Create(events);
+            var aggregateRoot = BaseAggregateRoot<TTenantId, TA, TKey>.Create(tenantId, id, events);
             return aggregateRoot;
         }
 
-        private IDomainEvent<TTenantId, TKey> DeserializeEvent(string eventType, string aggregateId,
+        private IDomainEvent<TTenantId, TKey> DeserializeEvent(string eventType, string tenantId, string aggregateId,
             string aggregateType,
             string timestamp, long version, JObject rawEvent)
         {
             var ci = GetConstructorInfo(eventType);
             var @event = ci.Invoke(new object[]
-                    {aggregateType, Guid.Parse(aggregateId), version, DateTimeOffset.Parse(timestamp)}) as
+                {
+                    aggregateType,
+                    TypeDescriptor.GetConverter(typeof(TTenantId)).ConvertFromString(tenantId),
+                    TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromString(aggregateId), 
+                    version, 
+                    DateTimeOffset.Parse(timestamp)
+                }) as
                 IDomainEvent<TTenantId, TKey>;
             JsonConvert.PopulateObject(rawEvent.ToString(), @event);
             return @event;
@@ -114,7 +119,7 @@ namespace Projects.Infrastructure.Repository
 
             var ci = eType.GetConstructor(
                 BindingFlags.Instance | BindingFlags.NonPublic,
-                new[] {typeof(string), typeof(TTenantId), typeof(TKey), typeof(long), typeof(DateTimeOffset)});
+                new[] { typeof(string), typeof(TTenantId), typeof(TKey), typeof(long), typeof(DateTimeOffset) });
 
             _eventConstructors.Add(eventType, ci);
 

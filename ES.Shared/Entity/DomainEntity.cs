@@ -1,12 +1,9 @@
 ﻿using System;
 
-namespace Projects.Shared.Entity
+namespace ES.Shared.Entity
 {
     public abstract class DomainEntity<TTenantId, TKey> : BaseEntity<TTenantId, TKey>
     {
-        protected DomainEntity()
-        {
-        }
 
         protected DomainEntity(TTenantId tenantId, TKey id) : base(tenantId, id)
         {

@@ -1,7 +1,7 @@
 ﻿using System;
 using Projects.Domain.Events;
-using Projects.Shared.Aggregate;
-using Projects.Shared.Events;
+using ES.Shared.Aggregate;
+using ES.Shared.Events;
 
 namespace Projects.Domain
 {
@@ -16,7 +16,10 @@ namespace Projects.Domain
         public ProjectStatus Status { get; private set; }
         public ProjectPriority Priority { get; private set; }
 
-        private Project()
+        public override string ResourceId => $"/org/{TenantId}/project/{Id}";
+
+        private Project(Guid tenantId, Guid projectId) : base(tenantId,
+            projectId)
         {
         }
 
@@ -34,6 +37,9 @@ namespace Projects.Domain
 
         private bool IsWritable()
         {
+            if (Deleted)
+                return false;
+
             switch (Status)
             {
                 case ProjectStatus.Cancelled:
@@ -117,57 +123,94 @@ namespace Projects.Domain
             AddEvent(pprio);
         }
 
+        public void DeleteProject()
+        {
+            var pdeleted = new ProjectDeleted(this);
+            AddEvent(pdeleted);
+        }
+
+        public void UndeleteProject()
+        {
+            var pundeleted = new ProjectUndeleted(this);
+            AddEvent(pundeleted);
+        }
+
         protected override void Apply(IDomainEvent<Guid, Guid> @event)
         {
-            switch (@event)
-            {
-                case ProjectCreated projectCreated:
-                    TenantId = projectCreated.TenantId;
-                    Id = projectCreated.AggregateId;
-                    Title = projectCreated.Title;
-                    StartDate = projectCreated.StartDate;
-                    Status = ProjectStatus.New;
-                    Priority = ProjectPriority.Medium;
-                    CreatedAt = projectCreated.Timestamp;
-                    break;
-                case ProjectStarted projectStarted:
-                    Status = ProjectStatus.Started;
-                    ActualStartDate = projectStarted.ActualStartDate;
-                    ModifiedAt = projectStarted.Timestamp;
-                    break;
-                case ProjectPaused projectPaused:
-                    Status = ProjectStatus.Paused;
-                    ModifiedAt = projectPaused.Timestamp;
-                    break;
-                case ProjectCancelled projectCancelled:
-                    Status = ProjectStatus.Cancelled;
-                    ModifiedAt = projectCancelled.Timestamp;
-                    break;
-                case ProjectResumed projectResumed:
-                    Status = ProjectStatus.Resumed;
-                    ModifiedAt = projectResumed.Timestamp;
-                    break;
-                case ProjectFinished projectFinished:
-                    Status = ProjectStatus.Finished;
-                    ActualEndDate = projectFinished.ActualEndDate;
-                    EndDate ??= projectFinished.ActualEndDate;
-                    ModifiedAt = projectFinished.Timestamp;
-                    break;
-                case ProjectDescriptionsUpdated projectDescriptionsUpdated:
-                    Title = projectDescriptionsUpdated.Title;
-                    Description = projectDescriptionsUpdated.Description;
-                    ModifiedAt = projectDescriptionsUpdated.Timestamp;
-                    break;
-                case ProjectDatesUpdated projectDatesUpdated:
-                    StartDate = projectDatesUpdated.StartDate;
-                    EndDate = projectDatesUpdated.EndDate;
-                    ModifiedAt = projectDatesUpdated.Timestamp;
-                    break;
-                case ProjectPriorityUpdated projectPriorityUpdated:
-                    Priority = projectPriorityUpdated.NewPriority;
-                    ModifiedAt = projectPriorityUpdated.Timestamp;
-                    break;
-            }
+            ApplyEvent((dynamic)@event);
+        }
+
+        private void ApplyEvent(ProjectCreated projectCreated)
+        {
+            Title = projectCreated.Title;
+            StartDate = projectCreated.StartDate;
+            Status = ProjectStatus.New;
+            Priority = ProjectPriority.Medium;
+            CreatedAt = projectCreated.Timestamp;
+        }
+
+        private void ApplyEvent(ProjectStarted projectStarted)
+        {
+            Status = ProjectStatus.Started;
+            ActualStartDate = projectStarted.ActualStartDate;
+            ModifiedAt = projectStarted.Timestamp;
+        }
+
+        private void ApplyEvent(ProjectPaused projectPaused)
+        {
+            Status = ProjectStatus.Paused;
+            ModifiedAt = projectPaused.Timestamp;
+        }
+
+        private void ApplyEvent(ProjectCancelled projectCancelled)
+        {
+            Status = ProjectStatus.Cancelled;
+            ModifiedAt = projectCancelled.Timestamp;
+        }
+
+        private void ApplyEvent(ProjectResumed projectResumed)
+        {
+            Status = ProjectStatus.Resumed;
+            ModifiedAt = projectResumed.Timestamp;
+        }
+
+        private void ApplyEvent(ProjectFinished projectFinished)
+        {
+            Status = ProjectStatus.Finished;
+            ActualEndDate = projectFinished.ActualEndDate;
+            EndDate ??= projectFinished.ActualEndDate;
+            ModifiedAt = projectFinished.Timestamp;
+        }
+
+        private void ApplyEvent(ProjectDescriptionsUpdated projectDescriptionsUpdated)
+        {
+            Title = projectDescriptionsUpdated.Title;
+            Description = projectDescriptionsUpdated.Description;
+            ModifiedAt = projectDescriptionsUpdated.Timestamp;
+        }
+
+        private void ApplyEvent(ProjectDatesUpdated projectDatesUpdated)
+        {
+            StartDate = projectDatesUpdated.StartDate;
+            EndDate = projectDatesUpdated.EndDate;
+            ModifiedAt = projectDatesUpdated.Timestamp;
+        }
+
+        private void ApplyEvent(ProjectPriorityUpdated projectPriorityUpdated)
+        {
+            Priority = projectPriorityUpdated.NewPriority;
+            ModifiedAt = projectPriorityUpdated.Timestamp;
+        }
+
+        private void ApplyEvent(ProjectDeleted projectDeleted)
+        {
+            Deleted = true;
+            DeletedAt = projectDeleted.Timestamp;
+        }
+        private void ApplyEvent(ProjectUndeleted projectUndeleted)
+        {
+            Deleted = false;
+            ModifiedAt = projectUndeleted.Timestamp;
         }
     }
 }

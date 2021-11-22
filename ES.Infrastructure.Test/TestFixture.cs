@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 
-namespace Projects.Infrastructure.Test
+namespace ES.Infrastructure.Test
 {
     public class TestFixture : IDisposable
     {
-        private CosmosClient cosmosClient;
         public Container Container { get; }
-
+        public Guid CurrentId => Guid.Parse("cb996bc3-f663-4042-9a6a-a6a410c32938");
+        public Guid TenantId => Guid.Parse("c4b355d5-8d4d-4ca2-87ec-0964c63fc103");
         public TestFixture()
         {
             var configuration = new ConfigurationBuilder()
@@ -18,22 +18,24 @@ namespace Projects.Infrastructure.Test
                 .AddEnvironmentVariables()
                 .Build();
 
-            var cOpts = new CosmosClientOptions();
-            cOpts.SerializerOptions = new CosmosSerializationOptions()
+            var cOpts = new CosmosClientOptions
             {
-                PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase,
-                IgnoreNullValues = true
+                SerializerOptions = new CosmosSerializationOptions()
+                {
+                    PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase,
+                    IgnoreNullValues = true
+                }
             };
             var containers = new List<(string, string)>
             {
                 (configuration.GetSection("Cosmos")["Db"], configuration.GetSection("Cosmos")["Container"])
             };
-            cosmosClient = CosmosClient.CreateAndInitializeAsync(configuration.GetSection("Cosmos")["Url"],
+            CosmosClient cosmosClient = CosmosClient.CreateAndInitializeAsync(configuration.GetSection("Cosmos")["Url"],
                 configuration.GetSection("Cosmos")["Key"], containers, cOpts).Result;
             Container = cosmosClient.GetContainer(configuration.GetSection("Cosmos")["Db"],
                 configuration.GetSection("Cosmos")["Container"]);
 
-            var cx = cosmosClient.ReadAccountAsync().Result;
+            cosmosClient.ReadAccountAsync().GetAwaiter().GetResult();
         }
 
         public void Dispose()

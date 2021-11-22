@@ -1,10 +1,7 @@
-﻿namespace Projects.Shared.Entity
+﻿namespace ES.Shared.Entity
 {
     public abstract class BaseEntity<TTenantId, TKey> : IEntity<TTenantId, TKey>
     {
-        protected BaseEntity()
-        {
-        }
 
         protected BaseEntity(TTenantId tenantId, TKey id)
         {
@@ -12,7 +9,8 @@
             Id = id;
         }
 
-        public TKey Id { get; protected set; }
-        public TTenantId TenantId { get; protected set; }
+        public TKey Id { get; }
+        public TTenantId TenantId { get; }
+        public abstract string ResourceId { get; }
     }
 }

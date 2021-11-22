@@ -1,12 +1,12 @@
 ﻿using System.Threading.Tasks;
-using Projects.Shared.Aggregate;
+using ES.Shared.Aggregate;
 
-namespace Projects.Shared.Repository
+namespace ES.Shared.Repository
 {
     public interface IEventsRepository<TTenantId, TA, TKey>
         where TA : class, IAggregateRoot<TTenantId, TKey>
     {
         Task AppendAsync(TA aggregateRoot);
-        Task<TA> RehydrateAsync(TTenantId tenantId, TKey key);
+        Task<TA> RehydrateAsync(TTenantId tenantId, TKey id);
     }
 }

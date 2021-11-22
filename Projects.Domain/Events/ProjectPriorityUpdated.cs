@@ -1,6 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
-using Projects.Shared.Events;
+using ES.Shared.Events;
 
 namespace Projects.Domain.Events
 {
@@ -20,5 +20,6 @@ namespace Projects.Domain.Events
 
         [JsonProperty] public ProjectPriority NewPriority { get; set; }
         [JsonProperty] public ProjectPriority OldPriority { get; set; }
+        public override string ResourceId => $"/org/{TenantId}/project/{AggregateId}";
     }
 }
