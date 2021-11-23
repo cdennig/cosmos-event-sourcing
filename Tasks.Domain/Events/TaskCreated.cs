@@ -12,11 +12,12 @@ namespace Tasks.Domain.Events
         {
         }
 
-        public TaskCreated(Task task, string title, string description, DateTimeOffset? startDate,
+        public TaskCreated(Task task, string title, string description, Guid? projectId, DateTimeOffset? startDate,
             DateTimeOffset? endDate, TaskPriority priority = TaskPriority.Medium) : base(task)
         {
             Title = title;
             Description = description;
+            ProjectId = projectId;
             StartDate = startDate;
             EndDate = endDate;
             Priority = priority;
@@ -24,6 +25,7 @@ namespace Tasks.Domain.Events
 
         [JsonProperty] public string Title { get; private set; }
         [JsonProperty] public string Description { get; private set; }
+        [JsonProperty] public Guid? ProjectId { get; private set; }
         [JsonProperty] public DateTimeOffset? StartDate { get; private set; }
         [JsonProperty] public DateTimeOffset? EndDate { get; private set; }
         [JsonProperty] public TaskPriority Priority { get; private set; }

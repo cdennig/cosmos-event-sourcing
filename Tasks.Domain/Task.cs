@@ -28,19 +28,21 @@ namespace Tasks.Domain
         {
         }
 
-        private Task(Guid tenantId, Guid taskId, string title, string description, DateTimeOffset? startDate,
-            DateTimeOffset? endDate, TaskPriority priority = TaskPriority.Medium) : base(tenantId,
+        private Task(Guid tenantId, Guid taskId, string title, string description, Guid? projectId = null,
+            DateTimeOffset? startDate = null,
+            DateTimeOffset? endDate = null, TaskPriority priority = TaskPriority.Medium) : base(tenantId,
             taskId)
         {
-            var created = new TaskCreated(this, title, description, startDate, endDate, priority);
+            var created = new TaskCreated(this, title, description, projectId, startDate, endDate, priority);
             AddEvent(created);
         }
 
         public static Task Initialize(Guid tenantId, Guid taskId, string title, string description = "",
+            Guid? projectId = null,
             DateTimeOffset? startDate = null,
             DateTimeOffset? endDate = null, TaskPriority priority = TaskPriority.Medium)
         {
-            return new Task(tenantId, taskId, title, description, startDate, endDate, priority);
+            return new Task(tenantId, taskId, title, description, projectId, startDate, endDate, priority);
         }
 
         private bool IsWritable()
@@ -118,8 +120,8 @@ namespace Tasks.Domain
             var assigned = new TaskAssignedToProject(this, projectId);
             AddEvent(assigned);
         }
-        
-        
+
+
         public void RemoveFromProject()
         {
             if (!IsWritable())
@@ -137,6 +139,7 @@ namespace Tasks.Domain
         {
             Title = created.Title;
             Description = created.Description;
+            ProjectId = created.ProjectId;
             StartDate = created.StartDate;
             EndDate = created.EndDate;
             Priority = created.Priority;
@@ -163,7 +166,7 @@ namespace Tasks.Domain
             Priority = taskPriorityUpdated.NewPriority;
             ModifiedAt = taskPriorityUpdated.Timestamp;
         }
-        
+
         private void ApplyEvent(TaskDeleted taskDeleted)
         {
             Deleted = true;
@@ -175,7 +178,7 @@ namespace Tasks.Domain
             Deleted = false;
             ModifiedAt = taskUndeleted.Timestamp;
         }
-        
+
         private void ApplyEvent(TaskSetComplete complete)
         {
             Completed = true;
@@ -195,7 +198,7 @@ namespace Tasks.Domain
             ProjectId = assignedToProject.NewProject;
             ModifiedAt = assignedToProject.Timestamp;
         }
-        
+
         private void ApplyEvent(TaskRemovedFromProject removedFromProject)
         {
             ProjectId = null;

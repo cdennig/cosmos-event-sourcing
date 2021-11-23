@@ -10,7 +10,7 @@ namespace Tasks.Domain.Test
         [Fact]
         public void Test_0001_Init_Task()
         {
-            var task = Task.Initialize(Guid.NewGuid(), Guid.NewGuid(), "Test Task", "Test Description",
+            var task = Task.Initialize(Guid.NewGuid(), Guid.NewGuid(), "Test Task", "Test Description", null,
                 DateTimeOffset.Now, DateTimeOffset.Now.AddMonths(3), TaskPriority.VeryHigh);
             Assert.Equal(task.DomainEvents.Last().Timestamp, task.CreatedAt);
             Assert.False(task.Completed);
@@ -19,7 +19,7 @@ namespace Tasks.Domain.Test
         [Fact]
         public void Test_0002_Task_UpdateDescriptions()
         {
-            var task = Task.Initialize(Guid.NewGuid(), Guid.NewGuid(), "Test Task", "Test Description",
+            var task = Task.Initialize(Guid.NewGuid(), Guid.NewGuid(), "Test Task", "Test Description", null,
                 DateTimeOffset.Now, DateTimeOffset.Now.AddMonths(3), TaskPriority.VeryHigh);
             task.SetDescriptions("Update", "Update");
             Assert.Equal(task.DomainEvents.Last().Timestamp, task.ModifiedAt);
@@ -107,6 +107,18 @@ namespace Tasks.Domain.Test
             task.RemoveFromProject();
             Assert.Null(task.ProjectId);
             Assert.Equal(task.DomainEvents.Last().Timestamp, task.ModifiedAt);
+        }
+        
+        [Fact]
+        public void Test_0008_Task_Has_Project_ResourceId()
+        {
+            var tenantId = Guid.NewGuid();
+            var taskId = Guid.NewGuid();
+            var projectId = Guid.NewGuid();
+            var task = Task.Initialize(tenantId, taskId, "Test Task", "", projectId);
+            Assert.Equal($"/orgs/{tenantId}/projects/{projectId}/tasks/{taskId}", task.ResourceId);
+            task.RemoveFromProject();
+            Assert.Equal($"/orgs/{tenantId}/tasks/{taskId}", task.ResourceId);
         }
     }
 }
