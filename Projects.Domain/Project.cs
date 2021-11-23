@@ -16,23 +16,26 @@ namespace Projects.Domain
         public ProjectStatus Status { get; private set; }
         public ProjectPriority Priority { get; private set; }
 
-        public override string ResourceId => $"/org/{TenantId}/project/{Id}";
+        public override string ResourceId => $"/orgs/{TenantId}/projects/{Id}";
 
         private Project(Guid tenantId, Guid projectId) : base(tenantId,
             projectId)
         {
         }
 
-        private Project(Guid tenantId, Guid projectId, string title, DateTimeOffset startDate) : base(tenantId,
+        private Project(Guid tenantId, Guid projectId, string title, string description, DateTimeOffset? startDate,
+            DateTimeOffset? endDate, ProjectPriority priority = ProjectPriority.Medium) : base(tenantId,
             projectId)
         {
-            var pc = new ProjectCreated(this, title, startDate);
+            var pc = new ProjectCreated(this, title, description, startDate, endDate, priority);
             AddEvent(pc);
         }
 
-        public static Project Initialize(Guid tenantId, Guid projectId, string title, DateTimeOffset startDate)
+        public static Project Initialize(Guid tenantId, Guid projectId, string title, string description = "",
+            DateTimeOffset? startDate = null,
+            DateTimeOffset? endDate = null, ProjectPriority priority = ProjectPriority.Medium)
         {
-            return new Project(tenantId, projectId, title, startDate);
+            return new Project(tenantId, projectId, title, description, startDate, endDate, priority);
         }
 
         private bool IsWritable()
@@ -152,6 +155,7 @@ namespace Projects.Domain
         private void ApplyEvent(ProjectStarted projectStarted)
         {
             Status = ProjectStatus.Started;
+            StartDate ??= projectStarted.ActualStartDate;
             ActualStartDate = projectStarted.ActualStartDate;
             ModifiedAt = projectStarted.Timestamp;
         }
@@ -207,6 +211,7 @@ namespace Projects.Domain
             Deleted = true;
             DeletedAt = projectDeleted.Timestamp;
         }
+
         private void ApplyEvent(ProjectUndeleted projectUndeleted)
         {
             Deleted = false;
