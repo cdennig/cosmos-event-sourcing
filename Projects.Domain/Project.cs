@@ -128,14 +128,18 @@ namespace Projects.Domain
 
         public void DeleteProject()
         {
-            var pdeleted = new ProjectDeleted(this);
-            AddEvent(pdeleted);
+            if (Deleted)
+                throw new ArgumentException("Project already deleted.");
+            var deleted = new ProjectDeleted(this);
+            AddEvent(deleted);
         }
 
         public void UndeleteProject()
         {
-            var pundeleted = new ProjectUndeleted(this);
-            AddEvent(pundeleted);
+            if (!Deleted)
+                throw new ArgumentException("Project not deleted.");
+            var undeleted = new ProjectUndeleted(this);
+            AddEvent(undeleted);
         }
 
         protected override void Apply(IDomainEvent<Guid, Guid> @event)
@@ -146,9 +150,11 @@ namespace Projects.Domain
         private void ApplyEvent(ProjectCreated projectCreated)
         {
             Title = projectCreated.Title;
+            Description = projectCreated.Description;
             StartDate = projectCreated.StartDate;
+            EndDate = projectCreated.EndDate;
             Status = ProjectStatus.New;
-            Priority = ProjectPriority.Medium;
+            Priority = projectCreated.Priority;
             CreatedAt = projectCreated.Timestamp;
         }
 
