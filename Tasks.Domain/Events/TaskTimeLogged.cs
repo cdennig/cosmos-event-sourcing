@@ -4,15 +4,15 @@ using Newtonsoft.Json;
 
 namespace Tasks.Domain.Events
 {
-    public class TimeLogged : BaseDomainEvent<Guid, Task, Guid>
+    public class TaskTimeLogged : BaseDomainEvent<Guid, Task, Guid>
     {
-        private TimeLogged(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+        private TaskTimeLogged(string aggregateType, Guid tenantId, Guid aggregateId, long version,
             DateTimeOffset timestamp) : base(
             aggregateType, tenantId, aggregateId, version, timestamp)
         {
         }
 
-        public TimeLogged(Task task, DateOnly day,
+        public TaskTimeLogged(Task task, DateOnly day,
             string comment, ulong duration) : base(task)
         {
             TimeLogEntryId = Guid.NewGuid();

@@ -21,8 +21,9 @@ namespace Tasks.Domain
 
         // ...in minutes
         public ulong TimeEstimation { get; private set; }
-        
-        private List<TimeLogEntry> _timeLogEntries = new();
+
+        private readonly List<TimeLogEntry> _timeLogEntries = new();
+
         public IReadOnlyCollection<TimeLogEntry> TimeLogEntries =>
             _timeLogEntries.ToImmutableArray();
 
@@ -125,6 +126,14 @@ namespace Tasks.Domain
             AddEvent(incomplete);
         }
 
+        public void SetTimeEstimation(ulong estimation)
+        {
+            if (!IsWritable())
+                throw new ArgumentException("Task readonly.");
+            var estimated = new TaskEstimated(this, estimation);
+            AddEvent(estimated);
+        }
+
         public void AssignToProject(Guid projectId)
         {
             if (projectId == Guid.Empty)
@@ -148,29 +157,21 @@ namespace Tasks.Domain
         {
             if (!IsWritable())
                 throw new Exception("Task readonly");
-            var timeLogged = new TimeLogged(this, day, comment, duration);
+            var timeLogged = new TaskTimeLogged(this, day, comment, duration);
             AddEvent(timeLogged);
         }
 
-        // public void DeleteTimeLogEntry(Guid entryId)
-        // {
-        //     if (!IsWritable())
-        //         throw new Exception("Task readonly");
-        //     var timeLogRemoved = new TimeLogRemoved(entryId);
-        //     AddEvent(timeLogRemoved);
-        // }
-        //
-        // public void AdjustTimeLogEntry(Guid entryId, ulong duration, string comment, DateTimeOffset day)
-        // {
-        //     if (!IsWritable())
-        //         throw new Exception("Task readonly");
-        //     var timeLogAdjusted = new TimeLogAdjusted(entryId, day, comment, duration);
-        //     AddEvent(timeLogAdjusted);
-        // }
+        public void DeleteTimeLogEntry(Guid entryId)
+        {
+            if (!IsWritable())
+                throw new Exception("Task readonly");
+            var timeLogEntryUpdated = new TaskTimeLogEntryDeleted(this, entryId);
+            AddEvent(timeLogEntryUpdated);
+        }
 
         protected override void Apply(IDomainEvent<Guid, Guid> @event)
         {
-            ApplyEvent((dynamic)@event);
+            ApplyEvent((dynamic) @event);
         }
 
         private void ApplyEvent(TaskCreated created)
@@ -244,18 +245,31 @@ namespace Tasks.Domain
             ModifiedAt = removedFromProject.Timestamp;
         }
 
-        private void ApplyEvent(TimeLogged timeLogged)
+        private void ApplyEvent(TaskTimeLogged taskTimeLogged)
         {
             var tle = TimeLogEntry.Initialize(
-                timeLogged.TenantId,
-                timeLogged.TimeLogEntryId,
-                timeLogged.AggregateId,
-                timeLogged.Day,
-                timeLogged.Comment,
-                timeLogged.Duration,
-                timeLogged.Timestamp
+                taskTimeLogged.TenantId,
+                taskTimeLogged.TimeLogEntryId,
+                this,
+                taskTimeLogged.Day,
+                taskTimeLogged.Comment,
+                taskTimeLogged.Duration,
+                taskTimeLogged.Timestamp
             );
             _timeLogEntries.Add(tle);
+        }
+
+        private void ApplyEvent(TaskEstimated taskEstimated)
+        {
+            TimeEstimation = taskEstimated.NewTimeEstimation;
+            ModifiedAt = taskEstimated.Timestamp;
+        }
+
+        private void ApplyEvent(TaskTimeLogEntryDeleted entryDeleted)
+        {
+            var tle = _timeLogEntries.FirstOrDefault(e => e.Id ==
+                                                          entryDeleted.TimeLogEntryId);
+            if (tle != null) _timeLogEntries.Remove(tle);
         }
     }
 }

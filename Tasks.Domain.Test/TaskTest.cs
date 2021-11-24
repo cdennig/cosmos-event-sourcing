@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using ES.Shared.Aggregate;
 using Xunit;
 
 namespace Tasks.Domain.Test
@@ -132,10 +133,44 @@ namespace Tasks.Domain.Test
             task.LogTime(180, "First time log entry", day);
             Assert.Equal(1, task.TimeLogEntries.Count);
             var tle = task.TimeLogEntries.First();
-            Assert.Equal(task.Id, tle.Parent);
+            Assert.Equal(task, tle.Parent);
             Assert.Equal("First time log entry", tle.Comment);
             Assert.Equal(180UL, tle.Duration);
             Assert.Equal(day, tle.Day);
+        }
+
+        [Fact]
+        public void Test_0010_Task_Recreate()
+        {
+            var tenantId = Guid.NewGuid();
+            var taskId = Guid.NewGuid();
+            var projectId = Guid.NewGuid();
+            var task = Task.Initialize(tenantId, taskId, "Test Task", "", projectId);
+            task.SetTimeEstimation(960);
+            var day = DateOnly.FromDateTime(DateTime.Now);
+            task.LogTime(180, "First time log entry", day);
+            var newTask = BaseAggregateRoot<Guid, Task, Guid>.Create(tenantId, taskId, task.DomainEvents);
+            Assert.Equal(task.TimeEstimation, newTask.TimeEstimation);
+            Assert.Equal(newTask.TimeLogEntries.Count, task.TimeLogEntries.Count);
+            var tle = newTask.TimeLogEntries.First();
+            Assert.Equal(task.Id, tle.Parent.Id);
+            Assert.Equal(task.TimeLogEntries.First().Comment, tle.Comment);
+            Assert.Equal(task.TimeLogEntries.First().Duration, tle.Duration);
+            Assert.Equal(task.TimeLogEntries.First().Day, tle.Day);
+        }
+        
+        [Fact]
+        public void Test_0011_Task_LogTime_And_Remove()
+        {
+            var tenantId = Guid.NewGuid();
+            var taskId = Guid.NewGuid();
+            var projectId = Guid.NewGuid();
+            var task = Task.Initialize(tenantId, taskId, "Test Task", "", projectId);
+            var day = DateOnly.FromDateTime(DateTime.Now);
+            task.LogTime(180, "First time log entry", day);
+            Assert.Equal(1, task.TimeLogEntries.Count);
+            task.DeleteTimeLogEntry(task.TimeLogEntries.First().Id);
+            Assert.Equal(0, task.TimeLogEntries.Count);
         }
     }
 }

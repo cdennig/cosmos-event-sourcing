@@ -9,27 +9,30 @@ namespace Tasks.Domain
         {
         }
 
-        private TimeLogEntry(Guid tenantId, Guid id, Guid parentId, DateOnly day,
+        private TimeLogEntry(Guid tenantId, Guid id, Task parent, DateOnly day,
             string comment, ulong duration, DateTimeOffset createdAt) : base(tenantId, id)
         {
-            Parent = parentId;
+            Parent = parent;
             Comment = comment;
             Day = day;
             Duration = duration;
             CreatedAt = createdAt;
         }
 
-        public Guid Parent { get; private set; }
+        public Task Parent { get; private set; }
         public string Comment { get; private set; }
         public ulong Duration { get; private set; }
         public DateOnly Day { get; private set; }
 
-        public override string ResourceId { get; }
+        public override string ResourceId =>
+            (Parent.ProjectId == null || Parent.ProjectId == Guid.Empty)
+                ? $"/orgs/{TenantId}/tasks/{Parent.Id}/timelogs/{Id}"
+                : $"/orgs/{TenantId}/projects/{Parent.ProjectId}/tasks/{Parent.Id}/timelogs/{Id}";
 
-        public static TimeLogEntry Initialize(Guid tenantId, Guid timeLogId, Guid parentId, DateOnly day,
+        public static TimeLogEntry Initialize(Guid tenantId, Guid timeLogId, Task parent, DateOnly day,
             string comment, ulong duration, DateTimeOffset createdAt)
         {
-            return new TimeLogEntry(tenantId, timeLogId, parentId, day, comment, duration, createdAt);
+            return new TimeLogEntry(tenantId, timeLogId, parent, day, comment, duration, createdAt);
         }
     }
 }
