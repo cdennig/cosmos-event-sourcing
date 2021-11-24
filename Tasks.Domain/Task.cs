@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
+using System.Linq;
 using ES.Shared.Aggregate;
 using ES.Shared.Events;
 using Tasks.Domain.Events;
@@ -11,9 +15,16 @@ namespace Tasks.Domain
         public string? Description { get; private set; }
         public DateTimeOffset? StartDate { get; private set; }
         public DateTimeOffset? EndDate { get; private set; }
-        public TaskPriority Priority { get; private set; }
+        public TaskPriority? Priority { get; private set; }
         public bool Completed { get; private set; }
         public DateTimeOffset? CompletedAt { get; private set; }
+
+        // ...in minutes
+        public ulong TimeEstimation { get; private set; }
+        
+        private List<TimeLogEntry> _timeLogEntries = new();
+        public IReadOnlyCollection<TimeLogEntry> TimeLogEntries =>
+            _timeLogEntries.ToImmutableArray();
 
         public Guid? ProjectId { get; private set; }
 
@@ -30,19 +41,22 @@ namespace Tasks.Domain
 
         private Task(Guid tenantId, Guid taskId, string title, string description, Guid? projectId = null,
             DateTimeOffset? startDate = null,
-            DateTimeOffset? endDate = null, TaskPriority priority = TaskPriority.Medium) : base(tenantId,
+            DateTimeOffset? endDate = null, TaskPriority priority = TaskPriority.Medium,
+            ulong timeEstimation = 0) : base(tenantId,
             taskId)
         {
-            var created = new TaskCreated(this, title, description, projectId, startDate, endDate, priority);
+            var created = new TaskCreated(this, title, description, projectId, startDate, endDate, priority,
+                timeEstimation);
             AddEvent(created);
         }
 
         public static Task Initialize(Guid tenantId, Guid taskId, string title, string description = "",
             Guid? projectId = null,
             DateTimeOffset? startDate = null,
-            DateTimeOffset? endDate = null, TaskPriority priority = TaskPriority.Medium)
+            DateTimeOffset? endDate = null, TaskPriority priority = TaskPriority.Medium, ulong timeEstimation = 0)
         {
-            return new Task(tenantId, taskId, title, description, projectId, startDate, endDate, priority);
+            return new Task(tenantId, taskId, title, description, projectId, startDate, endDate, priority,
+                timeEstimation);
         }
 
         private bool IsWritable()
@@ -130,6 +144,30 @@ namespace Tasks.Domain
             AddEvent(removedFromProject);
         }
 
+        public void LogTime(ulong duration, string comment, DateOnly day)
+        {
+            if (!IsWritable())
+                throw new Exception("Task readonly");
+            var timeLogged = new TimeLogged(this, day, comment, duration);
+            AddEvent(timeLogged);
+        }
+
+        // public void DeleteTimeLogEntry(Guid entryId)
+        // {
+        //     if (!IsWritable())
+        //         throw new Exception("Task readonly");
+        //     var timeLogRemoved = new TimeLogRemoved(entryId);
+        //     AddEvent(timeLogRemoved);
+        // }
+        //
+        // public void AdjustTimeLogEntry(Guid entryId, ulong duration, string comment, DateTimeOffset day)
+        // {
+        //     if (!IsWritable())
+        //         throw new Exception("Task readonly");
+        //     var timeLogAdjusted = new TimeLogAdjusted(entryId, day, comment, duration);
+        //     AddEvent(timeLogAdjusted);
+        // }
+
         protected override void Apply(IDomainEvent<Guid, Guid> @event)
         {
             ApplyEvent((dynamic)@event);
@@ -144,6 +182,7 @@ namespace Tasks.Domain
             EndDate = created.EndDate;
             Priority = created.Priority;
             Completed = false;
+            TimeEstimation = created.TimeEstimation;
             CreatedAt = created.Timestamp;
         }
 
@@ -203,6 +242,20 @@ namespace Tasks.Domain
         {
             ProjectId = null;
             ModifiedAt = removedFromProject.Timestamp;
+        }
+
+        private void ApplyEvent(TimeLogged timeLogged)
+        {
+            var tle = TimeLogEntry.Initialize(
+                timeLogged.TenantId,
+                timeLogged.TimeLogEntryId,
+                timeLogged.AggregateId,
+                timeLogged.Day,
+                timeLogged.Comment,
+                timeLogged.Duration,
+                timeLogged.Timestamp
+            );
+            _timeLogEntries.Add(tle);
         }
     }
 }

@@ -108,7 +108,7 @@ namespace Tasks.Domain.Test
             Assert.Null(task.ProjectId);
             Assert.Equal(task.DomainEvents.Last().Timestamp, task.ModifiedAt);
         }
-        
+
         [Fact]
         public void Test_0008_Task_Has_Project_ResourceId()
         {
@@ -119,6 +119,23 @@ namespace Tasks.Domain.Test
             Assert.Equal($"/orgs/{tenantId}/projects/{projectId}/tasks/{taskId}", task.ResourceId);
             task.RemoveFromProject();
             Assert.Equal($"/orgs/{tenantId}/tasks/{taskId}", task.ResourceId);
+        }
+
+        [Fact]
+        public void Test_0009_Task_LogTime()
+        {
+            var tenantId = Guid.NewGuid();
+            var taskId = Guid.NewGuid();
+            var projectId = Guid.NewGuid();
+            var task = Task.Initialize(tenantId, taskId, "Test Task", "", projectId);
+            var day = DateOnly.FromDateTime(DateTime.Now);
+            task.LogTime(180, "First time log entry", day);
+            Assert.Equal(1, task.TimeLogEntries.Count);
+            var tle = task.TimeLogEntries.First();
+            Assert.Equal(task.Id, tle.Parent);
+            Assert.Equal("First time log entry", tle.Comment);
+            Assert.Equal(180UL, tle.Duration);
+            Assert.Equal(day, tle.Day);
         }
     }
 }

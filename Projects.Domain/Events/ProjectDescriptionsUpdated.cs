@@ -18,7 +18,7 @@ namespace Projects.Domain.Events
         {
         }
 
-        [JsonProperty] public string Description { get; set; }
-        [JsonProperty] public string Title { get; set; }
+        [JsonProperty] public string? Description { get; set; }
+        [JsonProperty] public string? Title { get; set; }
     }
 }

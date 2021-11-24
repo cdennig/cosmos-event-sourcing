@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using ES.Infrastructure.Data;
 using Microsoft.Azure.Cosmos;
@@ -29,7 +30,7 @@ namespace ES.Infrastructure.Repository
             _eventsContainer = eventsContainer;
         }
 
-        public async Task AppendAsync(TA aggregateRoot)
+        public async Task AppendAsync(TA aggregateRoot, CancellationToken cancellationToken = default)
         {
             var domainEvents = aggregateRoot.DomainEvents;
 
@@ -48,7 +49,7 @@ namespace ES.Infrastructure.Repository
 
             var maxVersion = 0L;
             var nextVersion = domainEvents.First().Version;
-            if (fi.HasMoreResults) maxVersion = (await fi.ReadNextAsync()).SingleOrDefault();
+            if (fi.HasMoreResults) maxVersion = (await fi.ReadNextAsync(cancellationToken)).SingleOrDefault();
 
             if (maxVersion >= nextVersion) throw new ApplicationException("Version mismatch!");
 
@@ -62,7 +63,7 @@ namespace ES.Infrastructure.Repository
                 });
             }
 
-            var tbResult = await tb.ExecuteAsync();
+            var tbResult = await tb.ExecuteAsync(cancellationToken);
 
             if (!tbResult.IsSuccessStatusCode)
             {
@@ -70,7 +71,7 @@ namespace ES.Infrastructure.Repository
             }
         }
 
-        public async Task<TA> RehydrateAsync(TTenantId tenantId, TKey id)
+        public async Task<TA> RehydrateAsync(TTenantId tenantId, TKey id, CancellationToken cancellationToken = default)
         {
             var pk = new PartitionKey(id.ToString());
 
@@ -90,10 +91,10 @@ namespace ES.Infrastructure.Repository
                     });
             while (feedIterator.HasMoreResults)
             {
-                using ResponseMessage response = await feedIterator.ReadNextAsync();
+                using ResponseMessage response = await feedIterator.ReadNextAsync(cancellationToken);
                 using StreamReader sr = new(response.Content);
                 using JsonTextReader jtr = new(sr);
-                JObject result = await JObject.LoadAsync(jtr);
+                JObject result = await JObject.LoadAsync(jtr, cancellationToken);
                 var documents = result["Documents"];
                 events.AddRange(documents.Select(document => DeserializeEvent(document["eventType"].ToString(),
                     document["tenantId"].ToString(),

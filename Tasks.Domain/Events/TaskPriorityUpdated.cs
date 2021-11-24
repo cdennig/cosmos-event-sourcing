@@ -18,7 +18,7 @@ namespace Tasks.Domain.Events
         {
         }
 
-        [JsonProperty] public TaskPriority NewPriority { get; set; }
-        [JsonProperty] public TaskPriority OldPriority { get; set; }
+        [JsonProperty] public TaskPriority? NewPriority { get; set; }
+        [JsonProperty] public TaskPriority? OldPriority { get; set; }
     }
 }

@@ -22,8 +22,8 @@ namespace Projects.Domain.Events
             Priority = priority;
         }
 
-        [JsonProperty] public string Title { get; private set; }
-        [JsonProperty] public string Description { get; private set; }
+        [JsonProperty] public string? Title { get; private set; }
+        [JsonProperty] public string? Description { get; private set; }
         [JsonProperty] public DateTimeOffset? StartDate { get; private set; }
         [JsonProperty] public DateTimeOffset? EndDate { get; private set; }
         [JsonProperty] public ProjectPriority Priority { get; private set; }
