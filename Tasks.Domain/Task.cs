@@ -169,9 +169,19 @@ namespace Tasks.Domain
             AddEvent(timeLogEntryUpdated);
         }
 
+        public void ChangeTimeLogEntryComment(Guid entryId, string comment)
+        {
+            if (!IsWritable())
+                throw new Exception("Task readonly");
+            var tle = TimeLogEntries.SingleOrDefault(t => t.Id == entryId);
+            if (tle == null) throw new ArgumentException($"TimeLog entry not found: {entryId}");
+            var tleCommentChanged = new TaskTimeLogEntryCommentChanged(this, tle, comment);
+            AddEvent(tleCommentChanged);
+        }
+
         protected override void Apply(IDomainEvent<Guid, Guid> @event)
         {
-            ApplyEvent((dynamic) @event);
+            ApplyEvent((dynamic)@event);
         }
 
         private void ApplyEvent(TaskCreated created)
@@ -270,6 +280,13 @@ namespace Tasks.Domain
             var tle = _timeLogEntries.FirstOrDefault(e => e.Id ==
                                                           entryDeleted.TimeLogEntryId);
             if (tle != null) _timeLogEntries.Remove(tle);
+        }
+
+        private void ApplyEvent(TaskTimeLogEntryCommentChanged commentChanged)
+        {
+            var tle = _timeLogEntries.FirstOrDefault(e => e.Id ==
+                                                          commentChanged.TimeLogEntryId);
+            tle?.SetComment(commentChanged.NewComment);
         }
     }
 }

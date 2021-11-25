@@ -34,5 +34,10 @@ namespace Tasks.Domain
         {
             return new TimeLogEntry(tenantId, timeLogId, parent, day, comment, duration, createdAt);
         }
+
+        public void SetComment(string comment)
+        {
+            Comment = comment;
+        }
     }
 }

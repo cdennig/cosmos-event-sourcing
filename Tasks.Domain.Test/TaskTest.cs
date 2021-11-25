@@ -111,7 +111,7 @@ namespace Tasks.Domain.Test
         }
 
         [Fact]
-        public void Test_0008_Task_Has_Project_ResourceId()
+        public void Test_0009_Task_Has_Project_ResourceId()
         {
             var tenantId = Guid.NewGuid();
             var taskId = Guid.NewGuid();
@@ -123,7 +123,7 @@ namespace Tasks.Domain.Test
         }
 
         [Fact]
-        public void Test_0009_Task_LogTime()
+        public void Test_0010_Task_LogTime()
         {
             var tenantId = Guid.NewGuid();
             var taskId = Guid.NewGuid();
@@ -140,7 +140,7 @@ namespace Tasks.Domain.Test
         }
 
         [Fact]
-        public void Test_0010_Task_Recreate()
+        public void Test_0011_Task_Recreate()
         {
             var tenantId = Guid.NewGuid();
             var taskId = Guid.NewGuid();
@@ -158,9 +158,9 @@ namespace Tasks.Domain.Test
             Assert.Equal(task.TimeLogEntries.First().Duration, tle.Duration);
             Assert.Equal(task.TimeLogEntries.First().Day, tle.Day);
         }
-        
+
         [Fact]
-        public void Test_0011_Task_LogTime_And_Remove()
+        public void Test_0012_Task_LogTime_And_Remove()
         {
             var tenantId = Guid.NewGuid();
             var taskId = Guid.NewGuid();
@@ -171,6 +171,33 @@ namespace Tasks.Domain.Test
             Assert.Equal(1, task.TimeLogEntries.Count);
             task.DeleteTimeLogEntry(task.TimeLogEntries.First().Id);
             Assert.Equal(0, task.TimeLogEntries.Count);
+        }
+
+        [Fact]
+        public void Test_0013_Task_LogTime_Change_Comment()
+        {
+            var tenantId = Guid.NewGuid();
+            var taskId = Guid.NewGuid();
+            var projectId = Guid.NewGuid();
+            var task = Task.Initialize(tenantId, taskId, "Test Task", "", projectId);
+            var day = DateOnly.FromDateTime(DateTime.Now);
+            task.LogTime(180, "First time log entry", day);
+            Assert.Equal(1, task.TimeLogEntries.Count);
+            task.ChangeTimeLogEntryComment(task.TimeLogEntries.First().Id, "New comment");
+            Assert.Equal("New comment", task.TimeLogEntries.First().Comment);
+        }
+        
+        [Fact]
+        public void Test_0014_Task_LogTime_Change_Comment_Throws_With_Invalid_Id()
+        {
+            var tenantId = Guid.NewGuid();
+            var taskId = Guid.NewGuid();
+            var projectId = Guid.NewGuid();
+            var task = Task.Initialize(tenantId, taskId, "Test Task", "", projectId);
+            var day = DateOnly.FromDateTime(DateTime.Now);
+            task.LogTime(180, "First time log entry", day);
+            void act() => task.ChangeTimeLogEntryComment(Guid.NewGuid(), "New comment");
+            Assert.Throws<ArgumentException>(act);
         }
     }
 }
