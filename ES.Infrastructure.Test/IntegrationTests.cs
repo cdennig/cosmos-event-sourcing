@@ -6,11 +6,11 @@ using Xunit;
 namespace ES.Infrastructure.Test
 {
     [TestCaseOrderer("ES.Infrastructure.Test.AlphabeticalOrderer", "ES.Infrastructure.Test")]
-    public class IntegrationTests : IClassFixture<TestFixture>
+    public class IntegrationTests : IClassFixture<IntegrationTestFixture>
     {
-        private readonly TestFixture _fixture;
+        private readonly IntegrationTestFixture _fixture;
 
-        public IntegrationTests(TestFixture fixture)
+        public IntegrationTests(IntegrationTestFixture fixture)
         {
             _fixture = fixture;
         }

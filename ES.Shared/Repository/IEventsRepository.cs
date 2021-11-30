@@ -8,6 +8,6 @@ namespace ES.Shared.Repository
         where TA : class, IAggregateRoot<TTenantId, TKey>
     {
         Task AppendAsync(TA aggregateRoot, CancellationToken cancellationToken);
-        Task<TA> RehydrateAsync(TTenantId tenantId, TKey id, CancellationToken cancellationToken);
+        Task<TA> RehydrateAsync(TTenantId tenantId, TKey id, CancellationToken cancellationToken = default);
     }
 }
