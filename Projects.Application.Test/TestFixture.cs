@@ -30,6 +30,16 @@ namespace Projects.Application.Test
                     PauseProjectCommandHandler>()
                 .AddScoped<IRequestHandler<ResumeProjectCommand, ResumeProjectCommandResponse>,
                     ResumeProjectCommandHandler>()
+                .AddScoped<IRequestHandler<FinishProjectCommand, FinishProjectCommandResponse>,
+                    FinishProjectCommandHandler>()
+                .AddScoped<IRequestHandler<CancelProjectCommand, CancelProjectCommandResponse>,
+                    CancelProjectCommandHandler>()
+                .AddScoped<IRequestHandler<SetProjectDatesCommand, SetProjectDatesCommandResponse>,
+                    SetProjectDatesCommandHandler>()
+                .AddScoped<IRequestHandler<SetProjectPriorityCommand, SetProjectPriorityCommandResponse>,
+                    SetProjectPriorityCommandHandler>()
+                .AddScoped<IRequestHandler<SetProjectDescriptionsCommand, SetProjectDescriptionsCommandResponse>,
+                    SetProjectDescriptionsCommandHandler>()
                 .AddScoped<IRequestHandler<StartProjectCommand, StartProjectCommandResponse>,
                     StartProjectCommandHandler>();
             ServiceRegistrar.AddRequiredServices(services, serviceConfig);
