@@ -8,6 +8,7 @@ namespace Projects.Application.Commands
     public class SetProjectPriorityCommand : IRequest<SetProjectPriorityCommandResponse>
     {
         public Guid TenantId { get; set; }
+        public Guid PrincipalId { get; set; }
         public Guid Id { get; set; }
         public ProjectPriority Priority { get; set; }
     }

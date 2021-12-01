@@ -17,8 +17,8 @@ using Container = Microsoft.Azure.Cosmos.Container;
 
 namespace ES.Infrastructure.Repository
 {
-    public class CosmosEventsRepository<TTenantId, TA, TKey> : IEventsRepository<TTenantId, TA, TKey>
-        where TA : class, IAggregateRoot<TTenantId, TKey>
+    public class CosmosEventsRepository<TTenantId, TA, TKey, TPrincipalId> : IEventsRepository<TTenantId, TA, TKey, TPrincipalId>
+        where TA : class, IAggregateRoot<TTenantId, TKey, TPrincipalId>
     {
         private readonly Container _eventsContainer;
 
@@ -45,7 +45,7 @@ namespace ES.Infrastructure.Repository
                 .WithParameter("@tenantId", aggregateRoot.TenantId.ToString());
 
             var fi = _eventsContainer.GetItemQueryIterator<long>(queryDefinition, null,
-                new QueryRequestOptions { PartitionKey = pk });
+                new QueryRequestOptions {PartitionKey = pk});
 
             var maxVersion = 0L;
             var nextVersion = domainEvents.First().Version;
@@ -56,7 +56,7 @@ namespace ES.Infrastructure.Repository
             var tb = _eventsContainer.CreateTransactionalBatch(pk);
             foreach (var @event in domainEvents)
             {
-                var ed = new EventData<TTenantId, TKey>(@event);
+                var ed = new EventData<TTenantId, TKey, TPrincipalId>(@event);
                 tb.CreateItem(ed, new TransactionalBatchItemRequestOptions
                 {
                     EnableContentResponseOnWrite = false
@@ -75,7 +75,7 @@ namespace ES.Infrastructure.Repository
         {
             var pk = new PartitionKey(id.ToString());
 
-            var events = new List<IDomainEvent<TTenantId, TKey>>();
+            var events = new List<IDomainEvent<TTenantId, TKey, TPrincipalId>>();
 
             const string sqlQueryText =
                 "SELECT * FROM c WHERE c.type = @type AND c.tenantId = @tenantId ORDER BY c.version ASC";
@@ -98,15 +98,17 @@ namespace ES.Infrastructure.Repository
                 var documents = result["Documents"];
                 events.AddRange(documents.Select(document => DeserializeEvent(document["eventType"].ToString(),
                     document["tenantId"].ToString(),
+                    document["raisedBy"].ToString(),
                     document["aggregateId"].ToString(), document["aggregateType"].ToString(),
-                    document["timestamp"].ToString(), (long)document["version"], (JObject)document["event"])));
+                    document["timestamp"].ToString(), (long) document["version"], (JObject) document["event"])));
             }
 
-            var aggregateRoot = BaseAggregateRoot<TTenantId, TA, TKey>.Create(tenantId, id, events);
+            var aggregateRoot = BaseAggregateRoot<TTenantId, TA, TKey, TPrincipalId>.Create(tenantId, id, events);
             return aggregateRoot;
         }
 
-        private IDomainEvent<TTenantId, TKey> DeserializeEvent(string eventType, string tenantId, string aggregateId,
+        private IDomainEvent<TTenantId, TKey, TPrincipalId> DeserializeEvent(string eventType, string tenantId,
+            string raisedBy, string aggregateId,
             string aggregateType,
             string timestamp, long version, JObject rawEvent)
         {
@@ -115,11 +117,12 @@ namespace ES.Infrastructure.Repository
                 {
                     aggregateType,
                     TypeDescriptor.GetConverter(typeof(TTenantId)).ConvertFromString(tenantId),
+                    TypeDescriptor.GetConverter(typeof(TTenantId)).ConvertFromString(raisedBy),
                     TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromString(aggregateId),
                     version,
                     DateTimeOffset.Parse(timestamp)
                 }) as
-                IDomainEvent<TTenantId, TKey>;
+                IDomainEvent<TTenantId, TKey, TPrincipalId>;
             JsonConvert.PopulateObject(rawEvent.ToString(), @event);
             return @event;
         }
@@ -144,7 +147,7 @@ namespace ES.Infrastructure.Repository
 
             var ci = eType.GetConstructor(
                 BindingFlags.Instance | BindingFlags.NonPublic,
-                new[] { typeof(string), typeof(TTenantId), typeof(TKey), typeof(long), typeof(DateTimeOffset) });
+                new[] {typeof(string), typeof(TTenantId), typeof(TKey), typeof(long), typeof(DateTimeOffset)});
 
             _eventConstructors.Add(eventType, ci);
 

@@ -10,10 +10,11 @@ using ES.Shared.Repository;
 
 namespace ES.Infrastructure.Repository
 {
-    public class InMemoryEventsRepository<TTenantId, TA, TKey> : IEventsRepository<TTenantId, TA, TKey>
-        where TA : class, IAggregateRoot<TTenantId, TKey>
+    public class
+        InMemoryEventsRepository<TTenantId, TA, TKey, TPrincipalId> : IEventsRepository<TTenantId, TA, TKey, TPrincipalId>
+        where TA : class, IAggregateRoot<TTenantId, TKey, TPrincipalId>
     {
-        private Dictionary<string, List<EventData<TTenantId, TKey>>> _events = new();
+        private Dictionary<string, List<EventData<TTenantId, TKey, TPrincipalId>>> _events = new();
 
         public Task AppendAsync(TA aggregateRoot, CancellationToken cancellationToken = default)
         {
@@ -21,19 +22,19 @@ namespace ES.Infrastructure.Repository
             if (domainEvents.Count == 0) return Task.CompletedTask;
 
             var key = $"{aggregateRoot.TenantId}:{aggregateRoot.Id}";
-            List<EventData<TTenantId, TKey>> currentEvents;
+            List<EventData<TTenantId, TKey, TPrincipalId>> currentEvents;
 
             if (_events.ContainsKey(key))
                 currentEvents = _events[key];
             else
             {
-                currentEvents = new List<EventData<TTenantId, TKey>>();
+                currentEvents = new List<EventData<TTenantId, TKey, TPrincipalId>>();
                 _events.Add(key, currentEvents);
             }
 
             foreach (var domainEvent in domainEvents)
             {
-                var ed = new EventData<TTenantId, TKey>(@domainEvent);
+                var ed = new EventData<TTenantId, TKey, TPrincipalId>(@domainEvent);
                 currentEvents.Add(ed);
             }
 
@@ -43,7 +44,7 @@ namespace ES.Infrastructure.Repository
         public Task<TA> RehydrateAsync(TTenantId tenantId, TKey id, CancellationToken cancellationToken = default)
         {
             var key = $"{tenantId}:{id}";
-            List<EventData<TTenantId, TKey>> currentEvents;
+            List<EventData<TTenantId, TKey, TPrincipalId>> currentEvents;
             if (_events.ContainsKey(key))
                 currentEvents = _events[key];
             else
@@ -52,7 +53,7 @@ namespace ES.Infrastructure.Repository
             }
 
             var events = currentEvents.Select(eventData => eventData.Event).ToList();
-            var aggregateRoot = BaseAggregateRoot<TTenantId, TA, TKey>.Create(tenantId, id, events);
+            var aggregateRoot = BaseAggregateRoot<TTenantId, TA, TKey, TPrincipalId>.Create(tenantId, id, events);
             return Task.FromResult(aggregateRoot);
         }
     }

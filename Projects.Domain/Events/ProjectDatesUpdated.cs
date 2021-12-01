@@ -4,15 +4,16 @@ using ES.Shared.Events;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectDatesUpdated : BaseDomainEvent<Guid, Project, Guid>
+    public class ProjectDatesUpdated : BaseDomainEvent<Guid, Project, Guid, Guid>
     {
-        private ProjectDatesUpdated(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+        private ProjectDatesUpdated(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId, long version,
             DateTimeOffset timestamp) : base(
-            aggregateType, tenantId, aggregateId, version, timestamp)
+            aggregateType, tenantId, raisedBy, aggregateId, version, timestamp)
         {
         }
 
-        public ProjectDatesUpdated(Project project, DateTimeOffset startDate, DateTimeOffset endDate) : base(project)
+        public ProjectDatesUpdated(Project project, Guid raisedBy, DateTimeOffset startDate, DateTimeOffset endDate) :
+            base(project, raisedBy)
         {
             StartDate = startDate;
             EndDate = endDate;

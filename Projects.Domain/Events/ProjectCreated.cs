@@ -4,16 +4,17 @@ using Newtonsoft.Json;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectCreated : BaseDomainEvent<Guid, Project, Guid>
+    public class ProjectCreated : BaseDomainEvent<Guid, Project, Guid, Guid>
     {
-        private ProjectCreated(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+        private ProjectCreated(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId, long version,
             DateTimeOffset timestamp) : base(
-            aggregateType, tenantId, aggregateId, version, timestamp)
+            aggregateType, tenantId, raisedBy, aggregateId, version, timestamp)
         {
         }
 
-        public ProjectCreated(Project project, string title, string description, DateTimeOffset? startDate,
-            DateTimeOffset? endDate, ProjectPriority priority = ProjectPriority.Medium) : base(project)
+        public ProjectCreated(Project project, Guid raisedBy, string title, string description,
+            DateTimeOffset? startDate,
+            DateTimeOffset? endDate, ProjectPriority priority = ProjectPriority.Medium) : base(project, raisedBy)
         {
             Title = title;
             Description = description;

@@ -14,7 +14,7 @@ namespace ES.Infrastructure.Test
         {
             _fixture = fixture;
         }
-        
+
         // [Fact]
         // public async void Test_001_Hydrate()
         // {
@@ -27,23 +27,21 @@ namespace ES.Infrastructure.Test
         //     p.ResumeProject();
         //     await cer.AppendAsync(p);
         // }
-        
+
         [Fact]
         public async void Test_002_Rehydrate()
         {
-            var cer = new CosmosEventsRepository<Guid, Project, Guid>(_fixture.Container);
-            var p = await cer.RehydrateAsync(_fixture.TenantId,_fixture.CurrentId);
+            var cer = new CosmosEventsRepository<Guid, Project, Guid, Guid>(_fixture.Container);
+            var p = await cer.RehydrateAsync(_fixture.TenantId, _fixture.CurrentId);
         }
-        
+
         [Fact]
         public async void Test_003_AppendToExistingProject()
         {
-            var cer = new CosmosEventsRepository<Guid, Project, Guid>(_fixture.Container);
-            var p = await cer.RehydrateAsync(_fixture.TenantId,_fixture.CurrentId);
-            p.SetPriority(ProjectPriority.High);
+            var cer = new CosmosEventsRepository<Guid, Project, Guid, Guid>(_fixture.Container);
+            var p = await cer.RehydrateAsync(_fixture.TenantId, _fixture.CurrentId);
+            p.SetPriority(_fixture.UserId, ProjectPriority.High);
             await cer.AppendAsync(p);
         }
-        
-        
     }
 }

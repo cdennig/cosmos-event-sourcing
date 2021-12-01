@@ -4,16 +4,16 @@ using ES.Shared.Events;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectCancelled : BaseDomainEvent<Guid, Project, Guid>
+    public class ProjectCancelled : BaseDomainEvent<Guid, Project, Guid, Guid>
     {
-        private ProjectCancelled(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+        private ProjectCancelled(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId, long version,
             DateTimeOffset timestamp) :
             base(
-                aggregateType, tenantId, aggregateId, version, timestamp)
+                aggregateType, tenantId, raisedBy, aggregateId, version, timestamp)
         {
         }
 
-        public ProjectCancelled(Project project) : base(project)
+        public ProjectCancelled(Project project, Guid raisedBy) : base(project, raisedBy)
         {
             NewStatus = ProjectStatus.Cancelled;
             OldStatus = project.Status;

@@ -4,18 +4,18 @@ using ES.Shared.Events;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectStarted : BaseDomainEvent<Guid, Project, Guid>
+    public class ProjectStarted : BaseDomainEvent<Guid, Project, Guid, Guid>
     {
-        public ProjectStarted(Project project, DateTimeOffset actualStartDate) : base(project)
+        public ProjectStarted(Project project, Guid raisedBy, DateTimeOffset actualStartDate) : base(project, raisedBy)
         {
             NewStatus = ProjectStatus.Started;
             OldStatus = project.Status;
             ActualStartDate = actualStartDate;
         }
 
-        private ProjectStarted(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+        private ProjectStarted(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId, long version,
             DateTimeOffset timestamp) : base(
-            aggregateType, tenantId, aggregateId, version, timestamp)
+            aggregateType, tenantId, raisedBy, aggregateId, version, timestamp)
         {
         }
 

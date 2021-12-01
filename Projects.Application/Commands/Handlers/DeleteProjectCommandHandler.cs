@@ -10,9 +10,9 @@ namespace Projects.Application.Commands.Handlers
 {
     public class DeleteProjectCommandHandler : IRequestHandler<DeleteProjectCommand, DeleteProjectCommandResponse>
     {
-        private readonly IEventsRepository<Guid, Project, Guid> _repository;
+        private readonly IEventsRepository<Guid, Project, Guid, Guid> _repository;
 
-        public DeleteProjectCommandHandler(IEventsRepository<Guid, Project, Guid> repository)
+        public DeleteProjectCommandHandler(IEventsRepository<Guid, Project, Guid, Guid> repository)
         {
             _repository = repository;
         }
@@ -21,7 +21,7 @@ namespace Projects.Application.Commands.Handlers
             CancellationToken cancellationToken = default)
         {
             var p = await _repository.RehydrateAsync(request.TenantId, request.Id, cancellationToken);
-            p.DeleteProject();
+            p.DeleteProject(request.PrincipalId);
             await _repository.AppendAsync(p, cancellationToken);
 
             return new DeleteProjectCommandResponse(p.TenantId, p.Id, p.Version, p.ResourceId);

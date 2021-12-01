@@ -5,9 +5,9 @@ using ES.Shared.Events;
 
 namespace ES.Shared.Aggregate
 {
-    public interface IAggregateRoot<out TTenantId, out TKey> : IEntity<TTenantId, TKey>
+    public interface IAggregateRoot<out TTenantId, out TKey, out TPrincipalId> : IEntity<TTenantId, TKey>
     {
-        IReadOnlyCollection<IDomainEvent<TTenantId, TKey>> DomainEvents { get; }
+        IReadOnlyCollection<IDomainEvent<TTenantId, TKey, TPrincipalId>> DomainEvents { get; }
         long Version { get; }
         void ClearEvents();
     }

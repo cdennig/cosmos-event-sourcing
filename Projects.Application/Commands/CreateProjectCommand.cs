@@ -8,6 +8,7 @@ namespace Projects.Application.Commands
     public class CreateProjectCommand : IRequest<CreateProjectCommandResponse>
     {
         public Guid TenantId { get; set; }
+        public Guid PrincipalId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTimeOffset? StartDate { get; set; }

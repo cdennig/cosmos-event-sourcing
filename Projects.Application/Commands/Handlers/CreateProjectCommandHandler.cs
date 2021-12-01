@@ -10,9 +10,9 @@ namespace Projects.Application.Commands.Handlers
 {
     public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand, CreateProjectCommandResponse>
     {
-        private readonly IEventsRepository<Guid, Project, Guid> _repository;
+        private readonly IEventsRepository<Guid, Project, Guid, Guid> _repository;
 
-        public CreateProjectCommandHandler(IEventsRepository<Guid, Project, Guid> repository)
+        public CreateProjectCommandHandler(IEventsRepository<Guid, Project, Guid, Guid> repository)
         {
             _repository = repository;
         }
@@ -20,7 +20,9 @@ namespace Projects.Application.Commands.Handlers
         public async Task<CreateProjectCommandResponse> Handle(CreateProjectCommand request,
             CancellationToken cancellationToken = default)
         {
-            var p = Project.Initialize(request.TenantId, Guid.NewGuid(), request.Title, request.Description,
+            var p = Project.Initialize(request.TenantId, request.PrincipalId,
+                Guid.NewGuid(), request.Title,
+                request.Description,
                 request.StartDate, request.EndDate, request.Priority);
             await _repository.AppendAsync(p, cancellationToken);
 

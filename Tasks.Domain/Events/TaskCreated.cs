@@ -4,16 +4,18 @@ using Newtonsoft.Json;
 
 namespace Tasks.Domain.Events
 {
-    public class TaskCreated : BaseDomainEvent<Guid, Task, Guid>
+    public class TaskCreated : BaseDomainEvent<Guid, Task, Guid, Guid>
     {
-        private TaskCreated(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+        private TaskCreated(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId, long version,
             DateTimeOffset timestamp) : base(
-            aggregateType, tenantId, aggregateId, version, timestamp)
+            aggregateType, tenantId, raisedBy, aggregateId, version, timestamp)
         {
         }
 
-        public TaskCreated(Task task, string title, string description, Guid? projectId, DateTimeOffset? startDate,
-            DateTimeOffset? endDate, TaskPriority priority = TaskPriority.Medium, ulong timeEstimation = 0) : base(task)
+        public TaskCreated(Task task, Guid raisedBy, string title, string description, Guid? projectId,
+            DateTimeOffset? startDate,
+            DateTimeOffset? endDate, TaskPriority priority = TaskPriority.Medium, ulong timeEstimation = 0) : base(task,
+            raisedBy)
         {
             Title = title;
             Description = description;

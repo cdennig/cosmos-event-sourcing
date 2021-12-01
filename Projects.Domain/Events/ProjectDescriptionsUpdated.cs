@@ -4,17 +4,19 @@ using ES.Shared.Events;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectDescriptionsUpdated : BaseDomainEvent<Guid, Project, Guid>
+    public class ProjectDescriptionsUpdated : BaseDomainEvent<Guid, Project, Guid, Guid>
     {
-        public ProjectDescriptionsUpdated(Project project, string title, string description) : base(project)
+        public ProjectDescriptionsUpdated(Project project, Guid raisedBy, string title, string description) : base(
+            project, raisedBy)
         {
             Title = title;
             Description = description;
         }
 
-        private ProjectDescriptionsUpdated(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+        private ProjectDescriptionsUpdated(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId,
+            long version,
             DateTimeOffset timestamp) : base(
-            aggregateType, tenantId, aggregateId, version, timestamp)
+            aggregateType, tenantId, raisedBy, aggregateId, version, timestamp)
         {
         }
 

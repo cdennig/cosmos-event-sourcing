@@ -4,17 +4,19 @@ using ES.Shared.Events;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectPriorityUpdated : BaseDomainEvent<Guid, Project, Guid>
+    public class ProjectPriorityUpdated : BaseDomainEvent<Guid, Project, Guid, Guid>
     {
-        public ProjectPriorityUpdated(Project project, ProjectPriority priority) : base(project)
+        public ProjectPriorityUpdated(Project project, Guid raisedBy, ProjectPriority priority) : base(project,
+            raisedBy)
         {
             NewPriority = priority;
             OldPriority = project.Priority;
         }
 
-        private ProjectPriorityUpdated(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+        private ProjectPriorityUpdated(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId,
+            long version,
             DateTimeOffset timestamp) : base(
-            aggregateType, tenantId, aggregateId, version, timestamp)
+            aggregateType, tenantId, raisedBy, aggregateId, version, timestamp)
         {
         }
 

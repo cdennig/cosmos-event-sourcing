@@ -4,15 +4,15 @@ using Newtonsoft.Json;
 
 namespace Projects.Domain.Events
 {
-    public class ProjectUndeleted : BaseDomainEvent<Guid, Project, Guid>
+    public class ProjectUndeleted : BaseDomainEvent<Guid, Project, Guid, Guid>
     {
-        private ProjectUndeleted(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+        private ProjectUndeleted(string aggregateType, Guid tenantId, Guid aggregateId, Guid raisedBy, long version,
             DateTimeOffset timestamp) : base(
-            aggregateType, tenantId, aggregateId, version, timestamp)
+            aggregateType, tenantId, raisedBy, aggregateId, version, timestamp)
         {
         }
 
-        public ProjectUndeleted(Project project) : base(project)
+        public ProjectUndeleted(Project project, Guid raisedBy) : base(project, raisedBy)
         {
         }
     }

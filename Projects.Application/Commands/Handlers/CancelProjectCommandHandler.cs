@@ -10,9 +10,9 @@ namespace Projects.Application.Commands.Handlers
 {
     public class CancelProjectCommandHandler : IRequestHandler<CancelProjectCommand, CancelProjectCommandResponse>
     {
-        private readonly IEventsRepository<Guid, Project, Guid> _repository;
+        private readonly IEventsRepository<Guid, Project, Guid, Guid> _repository;
 
-        public CancelProjectCommandHandler(IEventsRepository<Guid, Project, Guid> repository)
+        public CancelProjectCommandHandler(IEventsRepository<Guid, Project, Guid, Guid> repository)
         {
             _repository = repository;
         }
@@ -21,7 +21,7 @@ namespace Projects.Application.Commands.Handlers
             CancellationToken cancellationToken = default)
         {
             var p = await _repository.RehydrateAsync(request.TenantId, request.Id, cancellationToken);
-            p.CancelProject();
+            p.CancelProject(request.PrincipalId);
             await _repository.AppendAsync(p, cancellationToken);
 
             return new CancelProjectCommandResponse(p.TenantId, p.Id, p.Version, p.ResourceId);

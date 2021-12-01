@@ -4,17 +4,17 @@ using ES.Shared.Events;
 
 namespace Tasks.Domain.Events
 {
-    public class TaskEstimated : BaseDomainEvent<Guid, Task, Guid>
+    public class TaskEstimated : BaseDomainEvent<Guid, Task, Guid, Guid>
     {
-        public TaskEstimated(Task task, ulong estimation) : base(task)
+        public TaskEstimated(Task task, Guid raisedBy, ulong estimation) : base(task, raisedBy)
         {
             NewTimeEstimation = estimation;
             OldTimeEstimation = task.TimeEstimation;
         }
 
-        private TaskEstimated(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+        private TaskEstimated(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId, long version,
             DateTimeOffset timestamp) : base(
-            aggregateType, tenantId, aggregateId, version, timestamp)
+            aggregateType, tenantId, raisedBy, aggregateId, version, timestamp)
         {
         }
 

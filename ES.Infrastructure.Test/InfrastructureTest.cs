@@ -19,15 +19,15 @@ namespace ES.Infrastructure.Test
         [Fact]
         async Task Test_0001_Append_InMemory()
         {
-            var p = Project.Initialize(_fixture.TenantId, _fixture.CurrentId,
+            var p = Project.Initialize(_fixture.TenantId, _fixture.UserId, _fixture.CurrentId,
                 "Test Project", "New Description",
                 DateTimeOffset.Now,
                 DateTimeOffset.Now.AddMonths(1), ProjectPriority.High);
-            p.SetDescriptions("New Title", "New description");
-            p.SetDates(DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
-            p.StartProject();
-            p.PauseProject();
-            p.ResumeProject();
+            p.SetDescriptions(_fixture.UserId, "New Title", "New description");
+            p.SetDates(_fixture.UserId, DateTimeOffset.MinValue, DateTimeOffset.MaxValue);
+            p.StartProject(_fixture.UserId);
+            p.PauseProject(_fixture.UserId);
+            p.ResumeProject(_fixture.UserId);
             await _fixture.CurrentRepo.AppendAsync(p);
         }
 
@@ -36,6 +36,8 @@ namespace ES.Infrastructure.Test
         {
             var p = await _fixture.CurrentRepo.RehydrateAsync(_fixture.TenantId, _fixture.CurrentId);
             Assert.Equal(ProjectPriority.High, p.Priority);
+            Assert.Equal(_fixture.UserId, p.CreatedBy);
+            Assert.Equal(_fixture.UserId, p.ModifiedBy);
         }
     }
 }

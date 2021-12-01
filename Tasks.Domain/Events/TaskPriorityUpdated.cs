@@ -4,17 +4,17 @@ using ES.Shared.Events;
 
 namespace Tasks.Domain.Events
 {
-    public class TaskPriorityUpdated : BaseDomainEvent<Guid, Task, Guid>
+    public class TaskPriorityUpdated : BaseDomainEvent<Guid, Task, Guid, Guid>
     {
-        public TaskPriorityUpdated(Task task, TaskPriority priority) : base(task)
+        public TaskPriorityUpdated(Task task, Guid raisedBy, TaskPriority priority) : base(task, raisedBy)
         {
             NewPriority = priority;
             OldPriority = task.Priority;
         }
 
-        private TaskPriorityUpdated(string aggregateType, Guid tenantId, Guid aggregateId, long version,
+        private TaskPriorityUpdated(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId, long version,
             DateTimeOffset timestamp) : base(
-            aggregateType, tenantId, aggregateId, version, timestamp)
+            aggregateType, tenantId, raisedBy, aggregateId, version, timestamp)
         {
         }
 

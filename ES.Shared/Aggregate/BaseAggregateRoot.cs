@@ -9,17 +9,17 @@ using ES.Shared.Events;
 
 namespace ES.Shared.Aggregate
 {
-    public abstract class BaseAggregateRoot<TTenantId, TA, TKey> : DomainEntity<TTenantId, TKey>,
-        IAggregateRoot<TTenantId, TKey>
-        where TA : class, IAggregateRoot<TTenantId, TKey>
+    public abstract class BaseAggregateRoot<TTenantId, TA, TKey, TPrincipalId> : DomainEntity<TTenantId, TKey, TPrincipalId>,
+        IAggregateRoot<TTenantId, TKey, TPrincipalId>
+        where TA : class, IAggregateRoot<TTenantId, TKey, TPrincipalId>
     {
-        private readonly ConcurrentQueue<IDomainEvent<TTenantId, TKey>> _events = new();
-        
+        private readonly ConcurrentQueue<IDomainEvent<TTenantId, TKey, TPrincipalId>> _events = new();
+
         protected BaseAggregateRoot(TTenantId tenantId, TKey id) : base(tenantId, id)
         {
         }
 
-        public IReadOnlyCollection<IDomainEvent<TTenantId, TKey>> DomainEvents => _events.ToImmutableArray();
+        public IReadOnlyCollection<IDomainEvent<TTenantId, TKey, TPrincipalId>> DomainEvents => _events.ToImmutableArray();
 
         public long Version { get; private set; }
 
@@ -28,7 +28,7 @@ namespace ES.Shared.Aggregate
             _events.Clear();
         }
 
-        protected void AddEvent(IDomainEvent<TTenantId, TKey> @event)
+        protected void AddEvent(IDomainEvent<TTenantId, TKey, TPrincipalId> @event)
         {
             if (@event.Version != Version)
                 throw new ArgumentException("Event applied in wrong order.");
@@ -40,7 +40,7 @@ namespace ES.Shared.Aggregate
             Version++;
         }
 
-        protected abstract void Apply(IDomainEvent<TTenantId, TKey> @event);
+        protected abstract void Apply(IDomainEvent<TTenantId, TKey, TPrincipalId> @event);
 
         private static readonly ConstructorInfo ConstructorInfo;
 
@@ -49,14 +49,14 @@ namespace ES.Shared.Aggregate
             var aggregateType = typeof(TA);
             ConstructorInfo = aggregateType.GetConstructor(
                                   BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public,
-                                  null, new[] { typeof(TTenantId), typeof(TKey) }, Array.Empty<ParameterModifier>()) ??
+                                  null, new[] {typeof(TTenantId), typeof(TKey)}, Array.Empty<ParameterModifier>()) ??
                               throw new InvalidOperationException();
             if (null == ConstructorInfo)
                 throw new InvalidOperationException(
                     $"Unable to find required private constructor for Aggregate of type '{aggregateType.Name}'");
         }
 
-        public static TA Create(TTenantId tenantId, TKey id, IEnumerable<IDomainEvent<TTenantId, TKey>> events)
+        public static TA Create(TTenantId tenantId, TKey id, IEnumerable<IDomainEvent<TTenantId, TKey, TPrincipalId>> events)
         {
             if (null == tenantId)
                 throw new ArgumentNullException(nameof(tenantId));
@@ -64,9 +64,9 @@ namespace ES.Shared.Aggregate
                 throw new ArgumentNullException(nameof(id));
             if (null == events || !events.Any())
                 throw new ArgumentNullException(nameof(events));
-            var result = (TA)ConstructorInfo.Invoke(new object[] { tenantId, id });
+            var result = (TA) ConstructorInfo.Invoke(new object[] {tenantId, id});
 
-            if (result is BaseAggregateRoot<TTenantId, TA, TKey> baseAggregate)
+            if (result is BaseAggregateRoot<TTenantId, TA, TKey, TPrincipalId> baseAggregate)
                 foreach (var @event in events)
                     baseAggregate.AddEvent(@event);
 

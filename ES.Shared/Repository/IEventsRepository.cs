@@ -4,8 +4,8 @@ using ES.Shared.Aggregate;
 
 namespace ES.Shared.Repository
 {
-    public interface IEventsRepository<TTenantId, TA, TKey>
-        where TA : class, IAggregateRoot<TTenantId, TKey>
+    public interface IEventsRepository<TTenantId, TA, TKey, TPrincipalId>
+        where TA : class, IAggregateRoot<TTenantId, TKey, TPrincipalId>
     {
         Task AppendAsync(TA aggregateRoot, CancellationToken cancellationToken);
         Task<TA> RehydrateAsync(TTenantId tenantId, TKey id, CancellationToken cancellationToken = default);
