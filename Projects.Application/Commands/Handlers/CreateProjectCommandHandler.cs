@@ -24,7 +24,7 @@ namespace Projects.Application.Commands.Handlers
                 request.StartDate, request.EndDate, request.Priority);
             await _repository.AppendAsync(p, cancellationToken);
 
-            return new CreateProjectCommandResponse(p.Id, p.Version, p.ResourceId);
+            return new CreateProjectCommandResponse(p.TenantId, p.Id, p.Version, p.ResourceId);
         }
     }
 }

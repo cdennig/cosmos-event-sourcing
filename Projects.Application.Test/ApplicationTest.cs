@@ -31,6 +31,11 @@ namespace Projects.Application.Test
             return res.Id;
         }
 
+        private async Task<Project> ReadProjectFromRepo(Guid tenantId, Guid id)
+        {
+            return await _fixture.CurrentRepo.RehydrateAsync(tenantId, id);
+        }
+
         [Fact]
         async void Test_0001_Create_Project()
         {
@@ -63,6 +68,8 @@ namespace Projects.Application.Test
             Assert.NotEqual(Guid.Empty, res.Id);
             Assert.Equal(2, res.Version);
             Assert.NotEmpty(res.ResourceId);
+            var p = await ReadProjectFromRepo(res.TenantId, res.Id);
+            Assert.Equal(ProjectStatus.Started, p.Status);
         }
 
         [Fact]
@@ -85,6 +92,8 @@ namespace Projects.Application.Test
             Assert.NotEqual(Guid.Empty, res.Id);
             Assert.Equal(3, res.Version);
             Assert.NotEmpty(res.ResourceId);
+            var p = await ReadProjectFromRepo(res.TenantId, res.Id);
+            Assert.Equal(ProjectStatus.Paused, p.Status);
         }
 
         [Fact]
@@ -112,6 +121,8 @@ namespace Projects.Application.Test
             Assert.NotEqual(Guid.Empty, res.Id);
             Assert.Equal(4, res.Version);
             Assert.NotEmpty(res.ResourceId);
+            var p = await ReadProjectFromRepo(res.TenantId, res.Id);
+            Assert.Equal(ProjectStatus.Resumed, p.Status);
         }
 
         [Fact]
@@ -134,6 +145,8 @@ namespace Projects.Application.Test
             Assert.NotEqual(Guid.Empty, res.Id);
             Assert.Equal(3, res.Version);
             Assert.NotEmpty(res.ResourceId);
+            var p = await ReadProjectFromRepo(res.TenantId, res.Id);
+            Assert.Equal(ProjectStatus.Finished, p.Status);
         }
 
         [Fact]
@@ -156,6 +169,8 @@ namespace Projects.Application.Test
             Assert.NotEqual(Guid.Empty, res.Id);
             Assert.Equal(3, res.Version);
             Assert.NotEmpty(res.ResourceId);
+            var p = await ReadProjectFromRepo(res.TenantId, res.Id);
+            Assert.Equal(ProjectStatus.Cancelled, p.Status);
         }
 
         [Fact]
@@ -174,26 +189,33 @@ namespace Projects.Application.Test
             Assert.NotEqual(Guid.Empty, res.Id);
             Assert.Equal(2, res.Version);
             Assert.NotEmpty(res.ResourceId);
+            var p = await ReadProjectFromRepo(res.TenantId, res.Id);
+            Assert.Equal("New Description", p.Description);
+            Assert.Equal("New Title", p.Title);
         }
 
         [Fact]
         async void Test_0008_Project_SetDates()
         {
             var resCreate = await CreateProjectAsync();
-
+            var newStart = DateTimeOffset.Now.AddYears(-1);
+            var newEnd = DateTimeOffset.Now.AddYears(10);
             var res = await _fixture.CurrentMediator.Send(new SetProjectDatesCommand()
             {
                 TenantId = _fixture.TenantId,
                 Id = resCreate,
-                StartDate = DateTimeOffset.Now.AddYears(-1),
-                EndDate = DateTimeOffset.Now.AddYears(10),
+                StartDate = newStart,
+                EndDate = newEnd,
             });
             Assert.NotNull(res);
             Assert.NotEqual(Guid.Empty, res.Id);
             Assert.Equal(2, res.Version);
             Assert.NotEmpty(res.ResourceId);
+            var p = await ReadProjectFromRepo(res.TenantId, res.Id);
+            Assert.Equal(newStart, p.StartDate);
+            Assert.Equal(newEnd, p.EndDate);
         }
-        
+
         [Fact]
         async void Test_0009_Project_SetPriority()
         {
@@ -209,6 +231,50 @@ namespace Projects.Application.Test
             Assert.NotEqual(Guid.Empty, res.Id);
             Assert.Equal(2, res.Version);
             Assert.NotEmpty(res.ResourceId);
+            var p = await ReadProjectFromRepo(res.TenantId, res.Id);
+            Assert.Equal(ProjectPriority.VeryLow, p.Priority);
+        }
+
+        [Fact]
+        async void Test_0010_Project_Delete()
+        {
+            var resCreate = await CreateProjectAsync();
+
+            var res = await _fixture.CurrentMediator.Send(new DeleteProjectCommand()
+            {
+                TenantId = _fixture.TenantId,
+                Id = resCreate
+            });
+            Assert.NotNull(res);
+            Assert.NotEqual(Guid.Empty, res.Id);
+            Assert.Equal(2, res.Version);
+            Assert.NotEmpty(res.ResourceId);
+            var p = await ReadProjectFromRepo(res.TenantId, res.Id);
+            Assert.True(p.Deleted);
+        }
+        
+        [Fact]
+        async void Test_0011_Project_Undelete()
+        {
+            var resCreate = await CreateProjectAsync();
+
+            await _fixture.CurrentMediator.Send(new DeleteProjectCommand()
+            {
+                TenantId = _fixture.TenantId,
+                Id = resCreate
+            });
+            
+            var res = await _fixture.CurrentMediator.Send(new UndeleteProjectCommand()
+            {
+                TenantId = _fixture.TenantId,
+                Id = resCreate
+            });
+            Assert.NotNull(res);
+            Assert.NotEqual(Guid.Empty, res.Id);
+            Assert.Equal(3, res.Version);
+            Assert.NotEmpty(res.ResourceId);
+            var p = await ReadProjectFromRepo(res.TenantId, res.Id);
+            Assert.False(p.Deleted);
         }
     }
 }

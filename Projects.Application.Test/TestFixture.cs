@@ -13,7 +13,7 @@ namespace Projects.Application.Test
 {
     public class TestFixture : IDisposable
     {
-        public InMemoryEventsRepository<Guid, Project, Guid> CurrentRepo = new();
+        public IEventsRepository<Guid, Project, Guid> CurrentRepo;
         public Guid CurrentId { get; set; }
         public Guid TenantId => Guid.Parse("c4b355d5-8d4d-4ca2-87ec-0964c63fc103");
         public IMediator CurrentMediator;
@@ -40,11 +40,16 @@ namespace Projects.Application.Test
                     SetProjectPriorityCommandHandler>()
                 .AddScoped<IRequestHandler<SetProjectDescriptionsCommand, SetProjectDescriptionsCommandResponse>,
                     SetProjectDescriptionsCommandHandler>()
+                .AddScoped<IRequestHandler<DeleteProjectCommand, DeleteProjectCommandResponse>,
+                    DeleteProjectCommandHandler>()
+                .AddScoped<IRequestHandler<UndeleteProjectCommand, UndeleteProjectCommandResponse>,
+                    UndeleteProjectCommandHandler>()
                 .AddScoped<IRequestHandler<StartProjectCommand, StartProjectCommandResponse>,
                     StartProjectCommandHandler>();
             ServiceRegistrar.AddRequiredServices(services, serviceConfig);
             Provider = services.BuildServiceProvider();
             CurrentMediator = Provider.GetService<IMediator>();
+            CurrentRepo = Provider.GetService<IEventsRepository<Guid, Project, Guid>>();
         }
 
         public void Dispose()

@@ -8,24 +8,23 @@ using Projects.Domain;
 
 namespace Projects.Application.Commands.Handlers
 {
-    public class SetProjectDescriptionsCommandHandler : IRequestHandler<SetProjectDescriptionsCommand,
-        SetProjectDescriptionsCommandResponse>
+    public class UndeleteProjectCommandHandler : IRequestHandler<UndeleteProjectCommand, UndeleteProjectCommandResponse>
     {
         private readonly IEventsRepository<Guid, Project, Guid> _repository;
 
-        public SetProjectDescriptionsCommandHandler(IEventsRepository<Guid, Project, Guid> repository)
+        public UndeleteProjectCommandHandler(IEventsRepository<Guid, Project, Guid> repository)
         {
             _repository = repository;
         }
 
-        public async Task<SetProjectDescriptionsCommandResponse> Handle(SetProjectDescriptionsCommand request,
+        public async Task<UndeleteProjectCommandResponse> Handle(UndeleteProjectCommand request,
             CancellationToken cancellationToken = default)
         {
             var p = await _repository.RehydrateAsync(request.TenantId, request.Id, cancellationToken);
-            p.SetDescriptions(request.Title, request.Description);
+            p.UndeleteProject();
             await _repository.AppendAsync(p, cancellationToken);
 
-            return new SetProjectDescriptionsCommandResponse(p.TenantId, p.Id, p.Version, p.ResourceId);
+            return new UndeleteProjectCommandResponse(p.TenantId, p.Id, p.Version, p.ResourceId);
         }
     }
 }

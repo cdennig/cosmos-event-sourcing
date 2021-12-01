@@ -2,5 +2,5 @@
 
 namespace Projects.Application.Commands.Responses
 {
-    public record CreateProjectCommandResponse(Guid Id, long Version, string ResourceId);
+    public record CreateProjectCommandResponse(Guid TenantId, Guid Id, long Version, string ResourceId);
 }

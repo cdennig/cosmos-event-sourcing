@@ -25,7 +25,7 @@ namespace Projects.Application.Commands.Handlers
             p.SetDates(request.StartDate, request.EndDate);
             await _repository.AppendAsync(p, cancellationToken);
 
-            return new SetProjectDatesCommandResponse(p.Id, p.Version, p.ResourceId);
+            return new SetProjectDatesCommandResponse(p.TenantId, p.Id, p.Version, p.ResourceId);
         }
     }
 }

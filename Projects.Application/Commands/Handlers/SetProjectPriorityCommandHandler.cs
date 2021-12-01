@@ -25,7 +25,7 @@ namespace Projects.Application.Commands.Handlers
             p.SetPriority(request.Priority);
             await _repository.AppendAsync(p, cancellationToken);
 
-            return new SetProjectPriorityCommandResponse(p.Id, p.Version, p.ResourceId);
+            return new SetProjectPriorityCommandResponse(p.TenantId, p.Id, p.Version, p.ResourceId);
         }
     }
 }
