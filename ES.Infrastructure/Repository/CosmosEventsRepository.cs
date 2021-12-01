@@ -17,7 +17,8 @@ using Container = Microsoft.Azure.Cosmos.Container;
 
 namespace ES.Infrastructure.Repository
 {
-    public class CosmosEventsRepository<TTenantId, TA, TKey, TPrincipalId> : IEventsRepository<TTenantId, TA, TKey, TPrincipalId>
+    public class
+        CosmosEventsRepository<TTenantId, TA, TKey, TPrincipalId> : IEventsRepository<TTenantId, TA, TKey, TPrincipalId>
         where TA : class, IAggregateRoot<TTenantId, TKey, TPrincipalId>
     {
         private readonly Container _eventsContainer;
@@ -47,9 +48,17 @@ namespace ES.Infrastructure.Repository
             var fi = _eventsContainer.GetItemQueryIterator<long>(queryDefinition, null,
                 new QueryRequestOptions {PartitionKey = pk});
 
-            var maxVersion = 0L;
+            var maxVersion = -1L;
             var nextVersion = domainEvents.First().Version;
-            if (fi.HasMoreResults) maxVersion = (await fi.ReadNextAsync(cancellationToken)).SingleOrDefault();
+
+            if (fi.HasMoreResults)
+            {
+                var versionResponse = await fi.ReadNextAsync(cancellationToken);
+                if (versionResponse.Count > 0)
+                {
+                    maxVersion = versionResponse.Single();
+                }
+            }
 
             if (maxVersion >= nextVersion) throw new ApplicationException("Version mismatch!");
 
@@ -117,7 +126,7 @@ namespace ES.Infrastructure.Repository
                 {
                     aggregateType,
                     TypeDescriptor.GetConverter(typeof(TTenantId)).ConvertFromString(tenantId),
-                    TypeDescriptor.GetConverter(typeof(TTenantId)).ConvertFromString(raisedBy),
+                    TypeDescriptor.GetConverter(typeof(TPrincipalId)).ConvertFromString(raisedBy),
                     TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromString(aggregateId),
                     version,
                     DateTimeOffset.Parse(timestamp)
@@ -147,7 +156,11 @@ namespace ES.Infrastructure.Repository
 
             var ci = eType.GetConstructor(
                 BindingFlags.Instance | BindingFlags.NonPublic,
-                new[] {typeof(string), typeof(TTenantId), typeof(TKey), typeof(long), typeof(DateTimeOffset)});
+                new[]
+                {
+                    typeof(string), typeof(TTenantId), typeof(TPrincipalId), typeof(TKey), typeof(long),
+                    typeof(DateTimeOffset)
+                });
 
             _eventConstructors.Add(eventType, ci);
 
