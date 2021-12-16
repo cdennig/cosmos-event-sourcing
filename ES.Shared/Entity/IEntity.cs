@@ -1,9 +1,8 @@
-﻿namespace ES.Shared.Entity
+﻿namespace ES.Shared.Entity;
+
+public interface IEntity<out TTenantKey, out TKey>
 {
-    public interface IEntity<out TTenantId, out TKey>
-    {
-        TTenantId TenantId { get; }
-        TKey Id { get; }
-        string ResourceId { get; }
-    }
+    TTenantKey TenantId { get; }
+    TKey Id { get; }
+    string ResourceId { get; }
 }

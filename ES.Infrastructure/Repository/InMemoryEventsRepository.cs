@@ -1,60 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using ES.Infrastructure.Data;
+﻿using ES.Infrastructure.Data;
 using ES.Shared.Aggregate;
-using ES.Shared.Events;
 using ES.Shared.Repository;
 
-namespace ES.Infrastructure.Repository
+namespace ES.Infrastructure.Repository;
+
+public class
+    InMemoryEventsRepository<TTenantKey, TAggregate, TKey, TPrincipalKey> : IEventsRepository<TTenantKey, TAggregate, TKey, TPrincipalKey>
+    where TAggregate : class, IAggregateRoot<TTenantKey, TKey, TPrincipalKey>
 {
-    public class
-        InMemoryEventsRepository<TTenantId, TA, TKey, TPrincipalId> : IEventsRepository<TTenantId, TA, TKey, TPrincipalId>
-        where TA : class, IAggregateRoot<TTenantId, TKey, TPrincipalId>
+    private Dictionary<string, List<EventData<TTenantKey, TKey, TPrincipalKey>>> _events = new();
+
+    public Task AppendAsync(TAggregate aggregateRoot, CancellationToken cancellationToken = default)
     {
-        private Dictionary<string, List<EventData<TTenantId, TKey, TPrincipalId>>> _events = new();
+        var domainEvents = aggregateRoot.DomainEvents;
+        if (domainEvents.Count == 0) return Task.CompletedTask;
 
-        public Task AppendAsync(TA aggregateRoot, CancellationToken cancellationToken = default)
+        var key = $"{aggregateRoot.TenantId}:{aggregateRoot.Id}";
+        List<EventData<TTenantKey, TKey, TPrincipalKey>> currentEvents;
+
+        if (_events.ContainsKey(key))
+            currentEvents = _events[key];
+        else
         {
-            var domainEvents = aggregateRoot.DomainEvents;
-            if (domainEvents.Count == 0) return Task.CompletedTask;
-
-            var key = $"{aggregateRoot.TenantId}:{aggregateRoot.Id}";
-            List<EventData<TTenantId, TKey, TPrincipalId>> currentEvents;
-
-            if (_events.ContainsKey(key))
-                currentEvents = _events[key];
-            else
-            {
-                currentEvents = new List<EventData<TTenantId, TKey, TPrincipalId>>();
-                _events.Add(key, currentEvents);
-            }
-
-            foreach (var domainEvent in domainEvents)
-            {
-                var ed = new EventData<TTenantId, TKey, TPrincipalId>(@domainEvent);
-                currentEvents.Add(ed);
-            }
-
-            return Task.CompletedTask;
+            currentEvents = new List<EventData<TTenantKey, TKey, TPrincipalKey>>();
+            _events.Add(key, currentEvents);
         }
 
-        public Task<TA> RehydrateAsync(TTenantId tenantId, TKey id, CancellationToken cancellationToken = default)
+        foreach (var domainEvent in domainEvents)
         {
-            var key = $"{tenantId}:{id}";
-            List<EventData<TTenantId, TKey, TPrincipalId>> currentEvents;
-            if (_events.ContainsKey(key))
-                currentEvents = _events[key];
-            else
-            {
-                throw new ArgumentException("No events for aggregate.");
-            }
-
-            var events = currentEvents.Select(eventData => eventData.Event).ToList();
-            var aggregateRoot = BaseAggregateRoot<TTenantId, TA, TKey, TPrincipalId>.Create(tenantId, id, events);
-            return Task.FromResult(aggregateRoot);
+            var ed = new EventData<TTenantKey, TKey, TPrincipalKey>(@domainEvent);
+            currentEvents.Add(ed);
         }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<TAggregate> RehydrateAsync(TTenantKey tenantId, TKey id, CancellationToken cancellationToken = default)
+    {
+        var key = $"{tenantId}:{id}";
+        List<EventData<TTenantKey, TKey, TPrincipalKey>> currentEvents;
+        if (_events.ContainsKey(key))
+            currentEvents = _events[key];
+        else
+        {
+            throw new ArgumentException("No events for aggregate.");
+        }
+
+        var events = currentEvents.Select(eventData => eventData.Event).ToList();
+        var aggregateRoot = BaseAggregateRoot<TTenantKey, TAggregate, TKey, TPrincipalKey>.Create(tenantId, id, events);
+        return Task.FromResult(aggregateRoot);
     }
 }

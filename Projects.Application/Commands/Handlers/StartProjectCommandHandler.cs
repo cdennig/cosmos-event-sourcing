@@ -1,30 +1,26 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using ES.Shared.Repository;
+﻿using ES.Shared.Repository;
 using MediatR;
 using Projects.Application.Commands.Responses;
 using Projects.Domain;
 
-namespace Projects.Application.Commands.Handlers
+namespace Projects.Application.Commands.Handlers;
+
+public class StartProjectCommandHandler : IRequestHandler<StartProjectCommand, StartProjectCommandResponse>
 {
-    public class StartProjectCommandHandler : IRequestHandler<StartProjectCommand, StartProjectCommandResponse>
+    private readonly IEventsRepository<Guid, Project, Guid, Guid> _repository;
+
+    public StartProjectCommandHandler(IEventsRepository<Guid, Project, Guid, Guid> repository)
     {
-        private readonly IEventsRepository<Guid, Project, Guid, Guid> _repository;
+        _repository = repository;
+    }
 
-        public StartProjectCommandHandler(IEventsRepository<Guid, Project, Guid, Guid> repository)
-        {
-            _repository = repository;
-        }
+    public async Task<StartProjectCommandResponse> Handle(StartProjectCommand request,
+        CancellationToken cancellationToken = default)
+    {
+        var p = await _repository.RehydrateAsync(request.TenantId, request.Id, cancellationToken);
+        p.StartProject(request.PrincipalId);
+        await _repository.AppendAsync(p, cancellationToken);
 
-        public async Task<StartProjectCommandResponse> Handle(StartProjectCommand request,
-            CancellationToken cancellationToken = default)
-        {
-            var p = await _repository.RehydrateAsync(request.TenantId, request.Id, cancellationToken);
-            p.StartProject(request.PrincipalId);
-            await _repository.AppendAsync(p, cancellationToken);
-
-            return new StartProjectCommandResponse(p.TenantId, p.Id, p.Version, p.ResourceId);
-        }
+        return new StartProjectCommandResponse(p.TenantId, p.Id, p.Version, p.ResourceId);
     }
 }

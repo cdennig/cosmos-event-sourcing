@@ -1,11 +1,10 @@
-﻿namespace Projects.Domain
+﻿namespace Projects.Domain;
+
+public enum ProjectPriority
 {
-    public enum ProjectPriority
-    {
-        VeryLow = 10,
-        Low = 20,
-        Medium = 30,
-        High = 40,
-        VeryHigh = 50
-    }
+    VeryLow = 10,
+    Low = 20,
+    Medium = 30,
+    High = 40,
+    VeryHigh = 50
 }

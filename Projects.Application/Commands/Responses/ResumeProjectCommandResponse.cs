@@ -1,6 +1,3 @@
-﻿using System;
+﻿namespace Projects.Application.Commands.Responses;
 
-namespace Projects.Application.Commands.Responses
-{
-    public record ResumeProjectCommandResponse(Guid TenantId, Guid Id, long Version, string ResourceId);
-}
+public record ResumeProjectCommandResponse(Guid TenantId, Guid Id, long Version, string ResourceId);

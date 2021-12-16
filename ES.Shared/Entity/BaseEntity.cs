@@ -1,16 +1,15 @@
-﻿namespace ES.Shared.Entity
+﻿namespace ES.Shared.Entity;
+
+public abstract class BaseEntity<TTenantKey, TKey> : IEntity<TTenantKey, TKey>
 {
-    public abstract class BaseEntity<TTenantId, TKey> : IEntity<TTenantId, TKey>
+
+    protected BaseEntity(TTenantKey tenantId, TKey id)
     {
-
-        protected BaseEntity(TTenantId tenantId, TKey id)
-        {
-            TenantId = tenantId;
-            Id = id;
-        }
-
-        public TKey Id { get; }
-        public TTenantId TenantId { get; }
-        public abstract string ResourceId { get; }
+        TenantId = tenantId;
+        Id = id;
     }
+
+    public TKey Id { get; }
+    public TTenantKey TenantId { get; }
+    public abstract string ResourceId { get; }
 }
