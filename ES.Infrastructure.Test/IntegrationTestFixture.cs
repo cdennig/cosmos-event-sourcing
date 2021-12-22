@@ -43,7 +43,7 @@ public class IntegrationTestFixture : IDisposable
         cosmosClient.ReadAccountAsync().GetAwaiter().GetResult();
 
         var domainEventsFactory = new DomainEventsFactory<Guid, Guid>();
-        domainEventsFactory.Initialize();
+        domainEventsFactory.Initialize(new List<Type> { typeof(Identity.Domain.User) });
         Repository = new CosmosEventsRepository<Identity.Domain.User, Guid, Guid>(Container, domainEventsFactory);
     }
 

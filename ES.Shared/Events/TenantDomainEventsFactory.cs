@@ -36,7 +36,7 @@ public class
     {
         if (_eventConstructors.Count == 0)
         {
-            Initialize();
+            throw new ApplicationException("TenantDomainEventsFactory not initialized.");
         }
 
         if (_eventConstructors.ContainsKey(eventType) && _eventConstructors[eventType].ContainsKey(eventVersion))
@@ -47,11 +47,14 @@ public class
         throw new ArgumentException($"No event class found for {eventType} / {eventVersion}");
     }
 
-    public void Initialize()
+    public void Initialize(IEnumerable<Type> types)
     {
         if (_assemblies.Count == 0)
         {
-            _assemblies.AddRange(AppDomain.CurrentDomain.GetAssemblies());
+            foreach (var type in types)
+            {
+                _assemblies.Add(Assembly.GetAssembly(type));
+            }
         }
 
         foreach (var type in _assemblies.Select(assembly => assembly.GetTypes()).SelectMany(types => types))

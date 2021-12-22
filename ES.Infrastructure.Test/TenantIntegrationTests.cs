@@ -14,11 +14,11 @@ public class TenantIntegrationTests : IClassFixture<TenantIntegrationTestFixture
     {
         _fixture = fixture;
     }
-    //
+    
     // [Fact]
     // public async void Test_001_Hydrate()
     // {
-    //     var cer = new CosmosEventsRepository<Guid, Project, Guid, Guid>(_fixture.Container);
+    //     var cer = _fixture.Repository;
     //     var p = Project.Initialize(_fixture.TenantId,
     //         _fixture.UserId,
     //         _fixture.CurrentId,

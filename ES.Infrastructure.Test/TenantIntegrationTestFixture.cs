@@ -44,7 +44,7 @@ public class TenantIntegrationTestFixture : IDisposable
         cosmosClient.ReadAccountAsync().GetAwaiter().GetResult();
 
         var domainEventsFactory = new TenantDomainEventsFactory<Guid, Guid, Guid>();
-        domainEventsFactory.Initialize();
+        domainEventsFactory.Initialize(new List<Type>() { typeof(Project) });
         Repository = new CosmosTenantEventsRepository<Guid, Project, Guid, Guid>(Container, domainEventsFactory);
     }
 
