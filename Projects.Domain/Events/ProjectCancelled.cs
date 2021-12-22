@@ -5,7 +5,7 @@ using ES.Shared.Events;
 namespace Projects.Domain.Events;
 
 [Event(nameof(ProjectCancelled), 1.0)]
-public class ProjectCancelled : BaseDomainEvent<Guid, Project, Guid, Guid>
+public class ProjectCancelled : TenantDomainEvent<Guid, Project, Guid, Guid>
 {
     private ProjectCancelled(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId, long version,
         DateTimeOffset timestamp) :

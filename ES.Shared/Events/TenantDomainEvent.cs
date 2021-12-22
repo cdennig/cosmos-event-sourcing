@@ -3,10 +3,10 @@ using Newtonsoft.Json;
 
 namespace ES.Shared.Events;
 
-public abstract class BaseDomainEvent<TTenantKey, TAggregate, TKey, TPrincipalKey> : IDomainEvent<TTenantKey, TKey, TPrincipalKey>
-    where TAggregate : IAggregateRoot<TTenantKey, TKey, TPrincipalKey>
+public abstract class TenantDomainEvent<TTenantKey, TAggregate, TKey, TPrincipalKey> : ITenantDomainEvent<TTenantKey, TKey, TPrincipalKey>
+    where TAggregate : ITenantAggregateRoot<TTenantKey, TKey, TPrincipalKey>
 {
-    protected BaseDomainEvent(string aggregateType, TTenantKey tenantId, TPrincipalKey raisedBy, TKey aggregateId,
+    protected TenantDomainEvent(string aggregateType, TTenantKey tenantId, TPrincipalKey raisedBy, TKey aggregateId,
         long version, DateTimeOffset timestamp)
     {
         TenantId = tenantId;
@@ -17,7 +17,7 @@ public abstract class BaseDomainEvent<TTenantKey, TAggregate, TKey, TPrincipalKe
         RaisedBy = raisedBy;
     }
 
-    protected BaseDomainEvent(TAggregate aggregateRoot, TPrincipalKey raisedBy)
+    protected TenantDomainEvent(TAggregate aggregateRoot, TPrincipalKey raisedBy)
     {
         if (aggregateRoot is null)
             throw new ArgumentNullException(nameof(aggregateRoot));

@@ -6,27 +6,25 @@ using Newtonsoft.Json.Linq;
 
 namespace ES.Shared.Events;
 
-public class
-    DomainEventsFactory<TTenantKey, TKey, TPrincipalKey> : IDomainEventsFactory<TTenantKey, TKey, TPrincipalKey>
+public class DomainEventsFactory<TKey, TPrincipalKey> : IDomainEventsFactory<TKey,
+    TPrincipalKey>
 {
     private readonly List<Assembly> _assemblies = new();
     private readonly Dictionary<string, Dictionary<double, ConstructorInfo>> _eventConstructors = new();
 
-    public IDomainEvent<TTenantKey, TKey, TPrincipalKey> BuildEvent(string eventType, double eventVersion,
-        string tenantId, string raisedBy,
-        string aggregateId, string aggregateType, string timestamp, long version, JObject rawEvent)
+    public IDomainEvent<TKey, TPrincipalKey> BuildEvent(string eventType, double eventVersion,
+        string raisedBy, string aggregateId, string aggregateType, string timestamp, long version, JObject rawEvent)
     {
         var ci = GetConstructorInfo(eventType, eventVersion);
         var @event = ci.Invoke(new object[]
             {
                 aggregateType,
-                TypeDescriptor.GetConverter(typeof(TTenantKey)).ConvertFromString(tenantId),
                 TypeDescriptor.GetConverter(typeof(TPrincipalKey)).ConvertFromString(raisedBy),
                 TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromString(aggregateId),
                 version,
                 DateTimeOffset.Parse(timestamp)
             }) as
-            IDomainEvent<TTenantKey, TKey, TPrincipalKey>;
+            IDomainEvent<TKey, TPrincipalKey>;
         JsonConvert.PopulateObject(rawEvent.ToString(), @event);
         return @event;
     }
@@ -52,7 +50,7 @@ public class
         {
             _assemblies.AddRange(AppDomain.CurrentDomain.GetAssemblies());
         }
-        
+
         foreach (var type in _assemblies.Select(assembly => assembly.GetTypes()).SelectMany(types => types))
         {
             if (type.GetCustomAttribute(typeof(EventAttribute)) is not EventAttribute attr) continue;
@@ -60,7 +58,7 @@ public class
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 new[]
                 {
-                    typeof(string), typeof(TTenantKey), typeof(TPrincipalKey), typeof(TKey), typeof(long),
+                    typeof(string), typeof(TPrincipalKey), typeof(TKey), typeof(long),
                     typeof(DateTimeOffset)
                 });
             if (constructorInfo == null)

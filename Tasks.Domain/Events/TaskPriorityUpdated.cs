@@ -5,7 +5,7 @@ using ES.Shared.Events;
 namespace Tasks.Domain.Events;
 
 [Event(nameof(TaskPriorityUpdated), 1.0)]
-public class TaskPriorityUpdated : BaseDomainEvent<Guid, Task, Guid, Guid>
+public class TaskPriorityUpdated : TenantDomainEvent<Guid, Task, Guid, Guid>
 {
     public TaskPriorityUpdated(Task task, Guid raisedBy, TaskPriority priority) : base(task, raisedBy)
     {

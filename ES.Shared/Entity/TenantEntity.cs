@@ -1,9 +1,9 @@
 ﻿namespace ES.Shared.Entity;
 
-public abstract class BaseEntity<TTenantKey, TKey> : IEntity<TTenantKey, TKey>
+public abstract class TenantEntity<TTenantKey, TKey> : ITenantEntity<TTenantKey, TKey>
 {
 
-    protected BaseEntity(TTenantKey tenantId, TKey id)
+    protected TenantEntity(TTenantKey tenantId, TKey id)
     {
         TenantId = tenantId;
         Id = id;

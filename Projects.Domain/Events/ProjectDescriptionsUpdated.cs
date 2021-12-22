@@ -5,7 +5,7 @@ using ES.Shared.Events;
 namespace Projects.Domain.Events;
 
 [Event(nameof(ProjectDescriptionsUpdated), 1.0)]
-public class ProjectDescriptionsUpdated : BaseDomainEvent<Guid, Project, Guid, Guid>
+public class ProjectDescriptionsUpdated : TenantDomainEvent<Guid, Project, Guid, Guid>
 {
     public ProjectDescriptionsUpdated(Project project, Guid raisedBy, string title, string description) : base(
         project, raisedBy)

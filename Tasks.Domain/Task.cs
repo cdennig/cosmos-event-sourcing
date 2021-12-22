@@ -5,7 +5,7 @@ using Tasks.Domain.Events;
 
 namespace Tasks.Domain;
 
-public class Task : BaseAggregateRoot<Guid, Task, Guid, Guid>
+public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
 {
     public string? Title { get; private set; }
     public string? Description { get; private set; }
@@ -178,7 +178,7 @@ public class Task : BaseAggregateRoot<Guid, Task, Guid, Guid>
         AddEvent(tleCommentChanged);
     }
 
-    protected override void Apply(IDomainEvent<Guid, Guid, Guid> @event)
+    protected override void Apply(ITenantDomainEvent<Guid, Guid, Guid> @event)
     {
         ApplyEvent((dynamic) @event);
     }

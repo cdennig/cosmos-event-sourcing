@@ -5,7 +5,7 @@ using ES.Shared.Events;
 namespace Projects.Domain.Events;
 
 [Event(nameof(ProjectStarted), 1.0)]
-public class ProjectStarted : BaseDomainEvent<Guid, Project, Guid, Guid>
+public class ProjectStarted : TenantDomainEvent<Guid, Project, Guid, Guid>
 {
     public ProjectStarted(Project project, Guid raisedBy, DateTimeOffset actualStartDate) : base(project, raisedBy)
     {

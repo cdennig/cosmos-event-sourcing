@@ -10,10 +10,9 @@ namespace ES.Infrastructure.Test;
 
 public class IntegrationTestFixture : IDisposable
 {
-    public CosmosEventsRepository<Guid, Project, Guid, Guid> Repository { get; }
+    public CosmosEventsRepository<Identity.Domain.User, Guid, Guid> Repository { get; }
     public Container Container { get; }
-    public Guid CurrentId => Guid.Parse("cb996bc3-f663-4042-9a6a-a6a410c32938");
-    public Guid TenantId => Guid.Parse("c4b355d5-8d4d-4ca2-87ec-0964c63fc103");
+    public Guid CurrentId => Guid.Parse("ede0ecb7-39ff-42ed-be87-92d7c19240b7");
     public Guid UserId => Guid.Parse("c576f6ce-ee4f-4d04-a9d3-63c590d322f1");
 
     public IntegrationTestFixture()
@@ -43,9 +42,9 @@ public class IntegrationTestFixture : IDisposable
 
         cosmosClient.ReadAccountAsync().GetAwaiter().GetResult();
 
-        var domainEventsFactory = new DomainEventsFactory<Guid, Guid, Guid>();
+        var domainEventsFactory = new DomainEventsFactory<Guid, Guid>();
         domainEventsFactory.Initialize();
-        Repository = new CosmosEventsRepository<Guid, Project, Guid, Guid>(Container, domainEventsFactory);
+        Repository = new CosmosEventsRepository<Identity.Domain.User, Guid, Guid>(Container, domainEventsFactory);
     }
 
     public void Dispose()

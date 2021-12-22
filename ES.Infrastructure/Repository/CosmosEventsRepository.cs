@@ -10,16 +10,16 @@ using Container = Microsoft.Azure.Cosmos.Container;
 namespace ES.Infrastructure.Repository;
 
 public class
-    CosmosEventsRepository<TTenantKey, TAggregate, TKey, TPrincipalKey> : IEventsRepository<TTenantKey, TAggregate, TKey
+    CosmosEventsRepository<TAggregate, TKey, TPrincipalKey> : IEventsRepository<TAggregate, TKey
         , TPrincipalKey>
-    where TAggregate : class, IAggregateRoot<TTenantKey, TKey, TPrincipalKey>
+    where TAggregate : class, IAggregateRoot<TKey, TPrincipalKey>
 {
     private readonly Container _eventsContainer;
 
-    private readonly IDomainEventsFactory<TTenantKey, TKey, TPrincipalKey> _domainEventsFactory;
+    private readonly IDomainEventsFactory<TKey, TPrincipalKey> _domainEventsFactory;
 
     public CosmosEventsRepository(Container eventsContainer,
-        IDomainEventsFactory<TTenantKey, TKey, TPrincipalKey> domainEventsFactory)
+        IDomainEventsFactory<TKey, TPrincipalKey> domainEventsFactory)
     {
         _eventsContainer = eventsContainer;
         _domainEventsFactory = domainEventsFactory;
@@ -34,10 +34,9 @@ public class
         var pk = new PartitionKey(aggregateRoot.Id.ToString());
 
         const string sqlQueryText =
-            "SELECT VALUE(MAX(c.version)) FROM c  WHERE c.type = @type AND c.tenantId = @tenantId";
+            "SELECT VALUE(MAX(c.version)) FROM c  WHERE c.type = @type";
 
-        var queryDefinition = new QueryDefinition(sqlQueryText).WithParameter("@type", "EVENT")
-            .WithParameter("@tenantId", aggregateRoot.TenantId.ToString());
+        var queryDefinition = new QueryDefinition(sqlQueryText).WithParameter("@type", "EVENT");
 
         var fi = _eventsContainer.GetItemQueryIterator<long>(queryDefinition, null,
             new QueryRequestOptions {PartitionKey = pk});
@@ -59,7 +58,7 @@ public class
         var tb = _eventsContainer.CreateTransactionalBatch(pk);
         foreach (var @event in domainEvents)
         {
-            var ed = new EventData<TTenantKey, TKey, TPrincipalKey>(@event);
+            var ed = new EventData<TKey, TPrincipalKey>(@event);
             tb.CreateItem(ed, new TransactionalBatchItemRequestOptions
             {
                 EnableContentResponseOnWrite = false
@@ -74,18 +73,17 @@ public class
         }
     }
 
-    public async Task<TAggregate> RehydrateAsync(TTenantKey tenantId, TKey id,
+    public async Task<TAggregate> RehydrateAsync(TKey id,
         CancellationToken cancellationToken = default)
     {
         var pk = new PartitionKey(id.ToString());
 
-        var events = new List<IDomainEvent<TTenantKey, TKey, TPrincipalKey>>();
+        var events = new List<IDomainEvent<TKey, TPrincipalKey>>();
 
         const string sqlQueryText =
-            "SELECT * FROM c WHERE c.type = @type AND c.tenantId = @tenantId ORDER BY c.version ASC";
+            "SELECT * FROM c WHERE c.type = @type ORDER BY c.version ASC";
 
-        var queryDefinition = new QueryDefinition(sqlQueryText).WithParameter("@type", "EVENT")
-            .WithParameter("@tenantId", tenantId.ToString());
+        var queryDefinition = new QueryDefinition(sqlQueryText).WithParameter("@type", "EVENT");
 
         var feedIterator =
             _eventsContainer.GetItemQueryStreamIterator(queryDefinition,
@@ -103,13 +101,13 @@ public class
             events.AddRange(documents.Select(document =>
                 _domainEventsFactory.BuildEvent(document["eventType"].ToString(),
                     (double) document["eventVersion"],
-                    document["tenantId"].ToString(),
                     document["raisedBy"].ToString(),
                     document["aggregateId"].ToString(), document["aggregateType"].ToString(),
                     document["timestamp"].ToString(), (long) document["version"], (JObject) document["event"])));
         }
 
-        var aggregateRoot = BaseAggregateRoot<TTenantKey, TAggregate, TKey, TPrincipalKey>.Create(tenantId, id, events);
+        var aggregateRoot =
+            AggregateRoot<TAggregate, TKey, TPrincipalKey>.Create(id, events);
         return aggregateRoot;
     }
 }

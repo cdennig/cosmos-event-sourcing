@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace Projects.Domain.Events;
 
 [Event(nameof(ProjectCreated), 1.0)]
-public class ProjectCreated : BaseDomainEvent<Guid, Project, Guid, Guid>
+public class ProjectCreated : TenantDomainEvent<Guid, Project, Guid, Guid>
 {
     private ProjectCreated(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId, long version,
         DateTimeOffset timestamp) : base(

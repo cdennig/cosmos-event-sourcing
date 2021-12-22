@@ -5,7 +5,7 @@ using ES.Shared.Events;
 namespace Projects.Domain.Events;
 
 [Event(nameof(ProjectPaused), 1.0)]
-public class ProjectPaused : BaseDomainEvent<Guid, Project, Guid, Guid>
+public class ProjectPaused : TenantDomainEvent<Guid, Project, Guid, Guid>
 {
     public ProjectPaused(Project project, Guid raisedBy) : base(project, raisedBy)
     {

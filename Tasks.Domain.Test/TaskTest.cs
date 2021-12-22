@@ -160,7 +160,7 @@ public class TaskTest
         task.SetTimeEstimation(user, 960);
         var day = DateOnly.FromDateTime(DateTime.Now);
         task.LogTime(user, 180, "First time log entry", day);
-        var newTask = BaseAggregateRoot<Guid, Task, Guid, Guid>.Create(tenantId, taskId, task.DomainEvents);
+        var newTask = TenantAggregateRoot<Guid, Task, Guid, Guid>.Create(tenantId, taskId, task.DomainEvents);
         Assert.Equal(task.TimeEstimation, newTask.TimeEstimation);
         Assert.Equal(newTask.TimeLogEntries.Count, task.TimeLogEntries.Count);
         var tle = newTask.TimeLogEntries.First();

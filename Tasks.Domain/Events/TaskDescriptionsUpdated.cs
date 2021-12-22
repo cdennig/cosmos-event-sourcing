@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace Tasks.Domain.Events;
 
 [Event(nameof(TaskDescriptionsUpdated), 1.0)]
-public class TaskDescriptionsUpdated : BaseDomainEvent<Guid, Task, Guid, Guid>
+public class TaskDescriptionsUpdated : TenantDomainEvent<Guid, Task, Guid, Guid>
 {
     public TaskDescriptionsUpdated(Task task, Guid raisedBy, string title, string description) : base(task,
         raisedBy)

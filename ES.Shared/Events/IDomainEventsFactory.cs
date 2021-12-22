@@ -2,12 +2,11 @@
 
 namespace ES.Shared.Events;
 
-public interface IDomainEventsFactory<out TTenantKey, out TKey, out TPrincipalKey>
+public interface IDomainEventsFactory<out TKey, out TPrincipalKey>
 {
     void Initialize();
 
-    IDomainEvent<TTenantKey, TKey, TPrincipalKey> BuildEvent(string eventType, double eventVersion,
-        string tenantId,
+    IDomainEvent<TKey, TPrincipalKey> BuildEvent(string eventType, double eventVersion,
         string raisedBy, string aggregateId, string aggregateType,
         string timestamp, long version, JObject rawEvent);
 }

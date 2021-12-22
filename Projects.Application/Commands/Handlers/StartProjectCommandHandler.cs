@@ -7,9 +7,9 @@ namespace Projects.Application.Commands.Handlers;
 
 public class StartProjectCommandHandler : IRequestHandler<StartProjectCommand, StartProjectCommandResponse>
 {
-    private readonly IEventsRepository<Guid, Project, Guid, Guid> _repository;
+    private readonly ITenantEventsRepository<Guid, Project, Guid, Guid> _repository;
 
-    public StartProjectCommandHandler(IEventsRepository<Guid, Project, Guid, Guid> repository)
+    public StartProjectCommandHandler(ITenantEventsRepository<Guid, Project, Guid, Guid> repository)
     {
         _repository = repository;
     }

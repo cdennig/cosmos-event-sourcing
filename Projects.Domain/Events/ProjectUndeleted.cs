@@ -4,7 +4,7 @@ using ES.Shared.Events;
 namespace Projects.Domain.Events;
 
 [Event(nameof(ProjectUndeleted), 1.0)]
-public class ProjectUndeleted : BaseDomainEvent<Guid, Project, Guid, Guid>
+public class ProjectUndeleted : TenantDomainEvent<Guid, Project, Guid, Guid>
 {
     private ProjectUndeleted(string aggregateType, Guid tenantId, Guid aggregateId, Guid raisedBy, long version,
         DateTimeOffset timestamp) : base(

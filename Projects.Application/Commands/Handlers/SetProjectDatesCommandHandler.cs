@@ -8,9 +8,9 @@ namespace Projects.Application.Commands.Handlers;
 public class SetProjectDatesCommandHandler : IRequestHandler<SetProjectDatesCommand,
     SetProjectDatesCommandResponse>
 {
-    private readonly IEventsRepository<Guid, Project, Guid, Guid> _repository;
+    private readonly ITenantEventsRepository<Guid, Project, Guid, Guid> _repository;
 
-    public SetProjectDatesCommandHandler(IEventsRepository<Guid, Project, Guid, Guid> repository)
+    public SetProjectDatesCommandHandler(ITenantEventsRepository<Guid, Project, Guid, Guid> repository)
     {
         _repository = repository;
     }

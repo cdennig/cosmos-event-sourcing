@@ -7,9 +7,9 @@ namespace Projects.Application.Commands.Handlers;
 
 public class DeleteProjectCommandHandler : IRequestHandler<DeleteProjectCommand, DeleteProjectCommandResponse>
 {
-    private readonly IEventsRepository<Guid, Project, Guid, Guid> _repository;
+    private readonly ITenantEventsRepository<Guid, Project, Guid, Guid> _repository;
 
-    public DeleteProjectCommandHandler(IEventsRepository<Guid, Project, Guid, Guid> repository)
+    public DeleteProjectCommandHandler(ITenantEventsRepository<Guid, Project, Guid, Guid> repository)
     {
         _repository = repository;
     }

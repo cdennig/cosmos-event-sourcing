@@ -5,7 +5,7 @@ using ES.Shared.Events;
 namespace Tasks.Domain.Events;
 
 [Event(nameof(TaskRemovedFromProject), 1.0)]
-public class TaskRemovedFromProject : BaseDomainEvent<Guid, Task, Guid, Guid>
+public class TaskRemovedFromProject : TenantDomainEvent<Guid, Task, Guid, Guid>
 {
     public TaskRemovedFromProject(Task task, Guid raisedBy) : base(task, raisedBy)
     {

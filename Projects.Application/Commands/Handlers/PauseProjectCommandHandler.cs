@@ -7,9 +7,9 @@ namespace Projects.Application.Commands.Handlers;
 
 public class PauseProjectCommandHandler : IRequestHandler<PauseProjectCommand, PauseProjectCommandResponse>
 {
-    private readonly IEventsRepository<Guid, Project, Guid, Guid> _repository;
+    private readonly ITenantEventsRepository<Guid, Project, Guid, Guid> _repository;
 
-    public PauseProjectCommandHandler(IEventsRepository<Guid, Project, Guid, Guid> repository)
+    public PauseProjectCommandHandler(ITenantEventsRepository<Guid, Project, Guid, Guid> repository)
     {
         _repository = repository;
     }

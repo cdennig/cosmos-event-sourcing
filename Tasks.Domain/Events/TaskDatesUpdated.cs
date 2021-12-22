@@ -5,7 +5,7 @@ using ES.Shared.Events;
 namespace Tasks.Domain.Events;
 
 [Event(nameof(TaskDatesUpdated), 1.0)]
-public class TaskDatesUpdated : BaseDomainEvent<Guid, Task, Guid, Guid>
+public class TaskDatesUpdated : TenantDomainEvent<Guid, Task, Guid, Guid>
 {
     private TaskDatesUpdated(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId, long version,
         DateTimeOffset timestamp) : base(

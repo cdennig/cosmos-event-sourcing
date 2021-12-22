@@ -8,9 +8,9 @@ namespace Projects.Application.Commands.Handlers;
 public class SetProjectPriorityCommandHandler : IRequestHandler<SetProjectPriorityCommand,
     SetProjectPriorityCommandResponse>
 {
-    private readonly IEventsRepository<Guid, Project, Guid, Guid> _repository;
+    private readonly ITenantEventsRepository<Guid, Project, Guid, Guid> _repository;
 
-    public SetProjectPriorityCommandHandler(IEventsRepository<Guid, Project, Guid, Guid> repository)
+    public SetProjectPriorityCommandHandler(ITenantEventsRepository<Guid, Project, Guid, Guid> repository)
     {
         _repository = repository;
     }

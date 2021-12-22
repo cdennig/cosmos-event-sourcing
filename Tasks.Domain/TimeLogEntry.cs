@@ -2,7 +2,7 @@
 
 namespace Tasks.Domain;
 
-public class TimeLogEntry : DomainEntity<Guid, Guid, Guid>
+public class TimeLogEntry : AuditableTenantEntity<Guid, Guid, Guid>
 {
     private TimeLogEntry(Guid tenantId, Guid id) : base(tenantId, id)
     {

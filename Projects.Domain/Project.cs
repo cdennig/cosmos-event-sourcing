@@ -4,7 +4,7 @@ using ES.Shared.Events;
 
 namespace Projects.Domain;
 
-public class Project : BaseAggregateRoot<Guid, Project, Guid, Guid>
+public class Project : TenantAggregateRoot<Guid, Project, Guid, Guid>
 {
     public string? Title { get; private set; }
     public string? Description { get; private set; }
@@ -143,7 +143,7 @@ public class Project : BaseAggregateRoot<Guid, Project, Guid, Guid>
         AddEvent(undeleted);
     }
 
-    protected override void Apply(IDomainEvent<Guid, Guid, Guid> @event)
+    protected override void Apply(ITenantDomainEvent<Guid, Guid, Guid> @event)
     {
         ApplyEvent((dynamic) @event);
     }

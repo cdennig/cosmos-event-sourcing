@@ -5,7 +5,7 @@ using ES.Shared.Events;
 namespace Tasks.Domain.Events;
 
 [Event(nameof(TaskEstimated), 1.0)]
-public class TaskEstimated : BaseDomainEvent<Guid, Task, Guid, Guid>
+public class TaskEstimated : TenantDomainEvent<Guid, Task, Guid, Guid>
 {
     public TaskEstimated(Task task, Guid raisedBy, ulong estimation) : base(task, raisedBy)
     {

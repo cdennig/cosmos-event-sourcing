@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace Tasks.Domain.Events;
 
 [Event(nameof(TaskTimeLogEntryCommentChanged), 1.0)]
-public class TaskTimeLogEntryCommentChanged : BaseDomainEvent<Guid, Task, Guid, Guid>
+public class TaskTimeLogEntryCommentChanged : TenantDomainEvent<Guid, Task, Guid, Guid>
 {
     private TaskTimeLogEntryCommentChanged(string aggregateType, Guid tenantId, Guid raisedBy, Guid aggregateId,
         long version,
