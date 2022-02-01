@@ -81,6 +81,15 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
         var primaryContactSet = new TenantPrimaryContactSet(this, by, contactId);
         AddEvent(primaryContactSet);
     }
+    
+    public void SetDirectoryCreated(Guid by)
+    {
+        if (!IsWritable())
+            throw new Exception("Tenant readonly");
+        
+        var tenantDirectoryCreated = new TenantDirectoryCreated(this, by);
+        AddEvent(tenantDirectoryCreated);
+    }
 
     protected override void Apply(IDomainEvent<Guid, Guid> @event)
     {
@@ -126,7 +135,14 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
     {
         ModifiedAt = primaryContactSet.Timestamp;
         ModifiedBy = primaryContactSet.RaisedBy;
-        Status &= TenantStatus.PrimaryContactAssigned;
+        Status |= TenantStatus.PrimaryContactAssigned;
         PrimaryContact = primaryContactSet.PrimaryContact;
+    }
+    
+    private void ApplyEvent(TenantDirectoryCreated tenantDirectoryCreated)
+    {
+        ModifiedAt = tenantDirectoryCreated.Timestamp;
+        ModifiedBy = tenantDirectoryCreated.RaisedBy;
+        Status |= TenantStatus.DirectoryCreated;
     }
 }

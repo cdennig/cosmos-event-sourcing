@@ -64,7 +64,7 @@ public class TenantTest
         Assert.Equal(createdBy, tenant.ModifiedBy);
         Assert.Equal("en-US", tenant.Language);
     }
-    
+
     [Fact]
     public void Test_0005_Tenant_Set_PrimaryContact()
     {
@@ -72,34 +72,27 @@ public class TenantTest
         var newTenantId = Guid.NewGuid();
         var tenant = Tenant.Initialize(createdBy, newTenantId, "My New Tenant", "A new tenant/organization.",
             "de-DE", "EU", "");
-        tenant.UpdateLanguage(createdBy, "en-US");
+        var primaryContact = Guid.NewGuid();
+        tenant.SetPrimaryContact(createdBy, primaryContact);
         Assert.Equal(tenant.DomainEvents.Last().Timestamp, tenant.ModifiedAt);
         Assert.Equal(createdBy, tenant.ModifiedBy);
-        Assert.Equal("en-US", tenant.Language);
+        Assert.Equal(primaryContact, tenant.PrimaryContact);
+        Assert.Equal(TenantStatus.PrimaryContactAssigned, tenant.Status & TenantStatus.PrimaryContactAssigned);
     }
 
-    // [Fact]
-    // public void Test_0005_User_Delete()
-    // {
-    //     var createdBy = Guid.NewGuid();
-    //     var newUserId = Guid.NewGuid();
-    //     var u = User.Initialize(createdBy, newUserId, "John", "Doe",
-    //         "jd@example.com", "A new user", "");
-    //     u.DeleteUser(createdBy);
-    //     Assert.Equal(u.DomainEvents.Last().Timestamp, u.DeletedAt);
-    //     Assert.Equal(createdBy, u.DeletedBy);
-    // }
-    //
-    // [Fact]
-    // public void Test_0006_User_Undelete()
-    // {
-    //     var createdBy = Guid.NewGuid();
-    //     var newUserId = Guid.NewGuid();
-    //     var u = User.Initialize(createdBy, newUserId, "John", "Doe",
-    //         "jd@example.com", "A new user", "");
-    //     u.DeleteUser(createdBy);
-    //     u.UndeleteUser(createdBy);
-    //     Assert.Equal(u.DomainEvents.Last().Timestamp, u.ModifiedAt);
-    //     Assert.Equal(createdBy, u.ModifiedBy);
-    // }
+    [Fact]
+    public void Test_0006_Tenant_DirectoryCreated()
+    {
+        var createdBy = Guid.NewGuid();
+        var newTenantId = Guid.NewGuid();
+        var tenant = Tenant.Initialize(createdBy, newTenantId, "My New Tenant", "A new tenant/organization.",
+            "de-DE", "EU", "");
+        tenant.SetDirectoryCreated(createdBy);
+        var primaryContact = Guid.NewGuid();
+        tenant.SetPrimaryContact(createdBy, primaryContact);
+        Assert.Equal(tenant.DomainEvents.Last().Timestamp, tenant.ModifiedAt);
+        Assert.Equal(createdBy, tenant.ModifiedBy);
+        Assert.Equal(TenantStatus.PrimaryContactAssigned, tenant.Status & TenantStatus.PrimaryContactAssigned);
+        Assert.Equal(TenantStatus.DirectoryCreated, tenant.Status & TenantStatus.DirectoryCreated);
+    }
 }
