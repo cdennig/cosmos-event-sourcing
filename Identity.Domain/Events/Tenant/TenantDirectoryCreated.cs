@@ -13,7 +13,12 @@ public class TenantDirectoryCreated : DomainEvent<Domain.Tenant, Guid, Guid>
     {
     }
 
-    public TenantDirectoryCreated(Domain.Tenant tenant, Guid raisedBy) : base(tenant, raisedBy)
+    public TenantDirectoryCreated(Domain.Tenant tenant, Guid raisedBy, Guid adminGroupId, Guid usersGroupId) : base(tenant, raisedBy)
     {
+        AdminGroupId = adminGroupId;
+        UsersGroupId = usersGroupId;
     }
+    
+    [JsonProperty] public Guid AdminGroupId { get; private set; }
+    [JsonProperty] public Guid UsersGroupId { get; private set; }
 }

@@ -85,14 +85,18 @@ public class TenantTest
     {
         var createdBy = Guid.NewGuid();
         var newTenantId = Guid.NewGuid();
+        var newAdminGroupId = Guid.NewGuid();
+        var newUsersGroupId = Guid.NewGuid();
         var tenant = Tenant.Initialize(createdBy, newTenantId, "My New Tenant", "A new tenant/organization.",
             "de-DE", "EU", "");
-        tenant.SetDirectoryCreated(createdBy);
+        tenant.SetDirectoryCreated(createdBy,newAdminGroupId,newUsersGroupId);
         var primaryContact = Guid.NewGuid();
         tenant.SetPrimaryContact(createdBy, primaryContact);
         Assert.Equal(tenant.DomainEvents.Last().Timestamp, tenant.ModifiedAt);
         Assert.Equal(createdBy, tenant.ModifiedBy);
         Assert.Equal(TenantStatus.PrimaryContactAssigned, tenant.Status & TenantStatus.PrimaryContactAssigned);
         Assert.Equal(TenantStatus.DirectoryCreated, tenant.Status & TenantStatus.DirectoryCreated);
+        Assert.Equal(newAdminGroupId,tenant.AdminGroup);
+        Assert.Equal(newUsersGroupId,tenant.UsersGroup);
     }
 }

@@ -10,26 +10,26 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
     {
     }
 
-    private Tenant(Guid principalId, Guid userId,
+    private Tenant(Guid principalId, Guid tenantId,
         string name,
         string description,
         string language,
         string location = "",
-        string pictureUri = "") : base(userId)
+        string pictureUri = "") : base(tenantId)
     {
         var uc = new TenantCreated(this, principalId, name,
             description, language, location, pictureUri);
         AddEvent(uc);
     }
 
-    public static Tenant Initialize(Guid principalId, Guid userId,
+    public static Tenant Initialize(Guid principalId, Guid tenantId,
         string name,
         string description,
         string language,
         string location = "",
         string pictureUri = "")
     {
-        return new Tenant(principalId, userId, name, description,
+        return new Tenant(principalId, tenantId, name, description,
             language, location, pictureUri);
     }
 
@@ -41,6 +41,8 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
     public string Location { get; private set; }
     public string PictureUri { get; private set; }
     public Guid? PrimaryContact { get; private set; }
+    public Guid? AdminGroup { get; private set; }
+    public Guid? UsersGroup { get; private set; }
     public TenantStatus Status { get; private set; }
 
     private bool IsWritable()
@@ -81,19 +83,22 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
         var primaryContactSet = new TenantPrimaryContactSet(this, by, contactId);
         AddEvent(primaryContactSet);
     }
-    
-    public void SetDirectoryCreated(Guid by)
+
+    public void SetDirectoryCreated(Guid by, Guid adminGroupId, Guid usersGroupId)
     {
         if (!IsWritable())
             throw new Exception("Tenant readonly");
-        
-        var tenantDirectoryCreated = new TenantDirectoryCreated(this, by);
+        if (AdminGroup != null || UsersGroup != null)
+        {
+            throw new Exception("Tenant Directory already created.");
+        }
+        var tenantDirectoryCreated = new TenantDirectoryCreated(this, by, adminGroupId, usersGroupId);
         AddEvent(tenantDirectoryCreated);
     }
 
     protected override void Apply(IDomainEvent<Guid, Guid> @event)
     {
-        ApplyEvent((dynamic) @event);
+        ApplyEvent((dynamic)@event);
     }
 
     private void ApplyEvent(TenantCreated tenantCreated)
@@ -138,11 +143,13 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
         Status |= TenantStatus.PrimaryContactAssigned;
         PrimaryContact = primaryContactSet.PrimaryContact;
     }
-    
+
     private void ApplyEvent(TenantDirectoryCreated tenantDirectoryCreated)
     {
         ModifiedAt = tenantDirectoryCreated.Timestamp;
         ModifiedBy = tenantDirectoryCreated.RaisedBy;
         Status |= TenantStatus.DirectoryCreated;
+        AdminGroup = tenantDirectoryCreated.AdminGroupId;
+        UsersGroup = tenantDirectoryCreated.UsersGroupId;
     }
 }

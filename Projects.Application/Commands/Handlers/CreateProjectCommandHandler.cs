@@ -21,6 +21,7 @@ public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand,
             Guid.NewGuid(), request.Title,
             request.Description,
             request.StartDate, request.EndDate, request.Priority);
+        
         await _repository.AppendAsync(p, cancellationToken);
 
         return new CreateProjectCommandResponse(p.TenantId, p.Id, p.Version, p.ResourceId);
