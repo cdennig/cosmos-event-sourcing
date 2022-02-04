@@ -50,7 +50,9 @@ public class DomainEventsFactory<TKey, TPrincipalKey> : IDomainEventsFactory<TKe
         {
             foreach (var type in types)
             {
-                _assemblies.Add(Assembly.GetAssembly(type));
+                _assemblies.Add(Assembly.GetAssembly(type) ??
+                                throw new InvalidOperationException(
+                                    "Type not found - initializing DomainEventsFactory."));
             }
         }
 
