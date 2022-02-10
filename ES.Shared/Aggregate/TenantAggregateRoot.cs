@@ -12,6 +12,7 @@ public abstract class TenantAggregateRoot<TTenantKey, TAggregate, TKey, TPrincip
     where TAggregate : class, ITenantAggregateRoot<TTenantKey, TKey, TPrincipalKey>
 {
     private readonly ConcurrentQueue<ITenantDomainEvent<TTenantKey, TKey, TPrincipalKey>> _events = new();
+    private readonly object _updateEventsLock = new object();
 
     protected TenantAggregateRoot(TTenantKey tenantId, TKey id) : base(tenantId, id)
     {
@@ -32,11 +33,53 @@ public abstract class TenantAggregateRoot<TTenantKey, TAggregate, TKey, TPrincip
         if (@event.Version != Version)
             throw new ArgumentException("Event applied in wrong order.");
 
-        _events.Enqueue(@event);
+        if (Monitor.TryEnter(_updateEventsLock, 300))
+        {
+            try
+            {
+                _events.Enqueue(@event);
 
-        Apply(@event);
+                Apply(@event);
+                Version++;
+            }
+            finally
+            {
+                Monitor.Exit(_updateEventsLock);
+            }
+        }
+        else
+        {
+            throw new Exception($"Could not acquire lock on aggregate ID {Id} / Version {Version}");
+        }
+    }
 
-        Version++;
+    protected void BatchAddEvents(IEnumerable<ITenantDomainEvent<TTenantKey, TKey, TPrincipalKey>> @events)
+    {
+        var tenantDomainEvents = @events.ToList();
+        if (tenantDomainEvents.First().Version != Version)
+            throw new ArgumentException("Events applied in wrong order.");
+
+        if (Monitor.TryEnter(_updateEventsLock, 300))
+        {
+            try
+            {
+                foreach (var @event in tenantDomainEvents)
+                {
+                    _events.Enqueue(@event);
+
+                    Apply(@event);
+                    Version++;
+                }
+            }
+            finally
+            {
+                Monitor.Exit(_updateEventsLock);
+            }
+        }
+        else
+        {
+            throw new Exception($"Could not acquire lock on aggregate ID {Id} / Version {Version}");
+        }
     }
 
     protected abstract void Apply(ITenantDomainEvent<TTenantKey, TKey, TPrincipalKey> @event);
@@ -48,7 +91,7 @@ public abstract class TenantAggregateRoot<TTenantKey, TAggregate, TKey, TPrincip
         var aggregateType = typeof(TAggregate);
         ConstructorInfo = aggregateType.GetConstructor(
                               BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public,
-                              null, new[] {typeof(TTenantKey), typeof(TKey)}, Array.Empty<ParameterModifier>()) ??
+                              null, new[] { typeof(TTenantKey), typeof(TKey) }, Array.Empty<ParameterModifier>()) ??
                           throw new InvalidOperationException();
         if (null == ConstructorInfo)
             throw new InvalidOperationException(
@@ -64,11 +107,10 @@ public abstract class TenantAggregateRoot<TTenantKey, TAggregate, TKey, TPrincip
             throw new ArgumentNullException(nameof(id));
         if (null == events || !events.Any())
             throw new ArgumentNullException(nameof(events));
-        var result = (TAggregate) ConstructorInfo.Invoke(new object[] {tenantId, id});
+        var result = (TAggregate)ConstructorInfo.Invoke(new object[] { tenantId, id });
 
         if (result is TenantAggregateRoot<TTenantKey, TAggregate, TKey, TPrincipalKey> baseAggregate)
-            foreach (var @event in events)
-                baseAggregate.AddEvent(@event);
+            baseAggregate.BatchAddEvents(events);
 
         result.ClearEvents();
 
