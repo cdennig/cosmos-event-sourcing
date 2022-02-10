@@ -1,5 +1,6 @@
 ﻿using ES.Shared.Aggregate;
 using ES.Shared.Events;
+using ES.Shared.Exceptions;
 using Identity.Domain.Events.Tenant;
 
 namespace Identity.Domain;
@@ -53,7 +54,7 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
     public void UpdateGeneralInformation(Guid by, string name, string description, string pictureUri)
     {
         if (!IsWritable())
-            throw new Exception("Tenant readonly");
+            throw new AggregateReadOnlyException("Tenant readonly");
         var informationUpdated = new TenantGeneralInformationUpdated(this, by, name, description, pictureUri);
         AddEvent(informationUpdated);
     }
@@ -61,7 +62,7 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
     public void UpdateLanguage(Guid by, string language)
     {
         if (!IsWritable())
-            throw new Exception("Tenant readonly");
+            throw new AggregateReadOnlyException("Tenant readonly");
         var languageUpdated = new TenantLanguageUpdated(this, by, language);
         AddEvent(languageUpdated);
     }
@@ -69,7 +70,7 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
     public void UpdateLocation(Guid by, string location)
     {
         if (!IsWritable())
-            throw new Exception("Tenant readonly");
+            throw new AggregateReadOnlyException("Tenant readonly");
         var locationUpdated = new TenantLocationUpdated(this, by, location);
         AddEvent(locationUpdated);
     }
@@ -77,7 +78,7 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
     public void SetPrimaryContact(Guid by, Guid contactId)
     {
         if (!IsWritable())
-            throw new Exception("Tenant readonly");
+            throw new AggregateReadOnlyException("Tenant readonly");
         if (contactId.Equals(Guid.Empty))
             throw new ArgumentException("Contact cannot be empty.");
         var primaryContactSet = new TenantPrimaryContactSet(this, by, contactId);
@@ -87,10 +88,10 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
     public void SetDirectoryCreated(Guid by, Guid adminGroupId, Guid usersGroupId)
     {
         if (!IsWritable())
-            throw new Exception("Tenant readonly");
+            throw new AggregateReadOnlyException("Tenant readonly");
         if (AdminGroup != null || UsersGroup != null)
         {
-            throw new Exception("Tenant Directory already created.");
+            throw new ArgumentException("Tenant Directory already created.");
         }
         var tenantDirectoryCreated = new TenantDirectoryCreated(this, by, adminGroupId, usersGroupId);
         AddEvent(tenantDirectoryCreated);

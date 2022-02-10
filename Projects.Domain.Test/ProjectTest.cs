@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using ES.Shared.Aggregate;
+using ES.Shared.Exceptions;
 using Xunit;
 
 namespace Projects.Domain.Test;
@@ -181,7 +182,7 @@ public class ProjectTest
         p.StartProject(user);
         p.FinishProject(user);
         void Action() => p.SetDescriptions(user, "Should throw", "an exception");
-        Assert.Throws<Exception>(Action);
+        Assert.Throws<AggregateReadOnlyException>(Action);
     }
 
     [Fact]
@@ -254,7 +255,7 @@ public class ProjectTest
         Assert.Throws<ArgumentException>(Action);
         p.CancelProject(user);
         newTitle = "New Title";
-        Assert.Throws<Exception>(Action);
+        Assert.Throws<AggregateReadOnlyException>(Action);
     }
 
     [Fact]
@@ -266,7 +267,7 @@ public class ProjectTest
         var p = Project.Initialize(tenantId, user, projectId, "Test Project");
         p.DeleteProject(user);
         void Action() => p.SetPriority(user, ProjectPriority.VeryLow);
-        Assert.Throws<Exception>(Action);
+        Assert.Throws<AggregateReadOnlyException>(Action);
     }
 
     [Fact]
@@ -282,6 +283,6 @@ public class ProjectTest
         Assert.Throws<ArgumentException>(Action);
         p.DeleteProject(user);
         void Action2() => p.SetDates(user, endDate, startDate);
-        Assert.Throws<Exception>(Action2);
+        Assert.Throws<AggregateReadOnlyException>(Action2);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using ES.Shared.Aggregate;
 using ES.Shared.Events;
+using ES.Shared.Exceptions;
 using Identity.Domain.Events;
 using Identity.Domain.Events.User;
 
@@ -51,7 +52,7 @@ public class User : AggregateRoot<User, Guid, Guid>
     public void ConfirmUser(Guid by)
     {
         if (!IsWritable())
-            throw new Exception("User readonly");
+            throw new AggregateReadOnlyException("User readonly");
         var userConfirmed = new UserConfirmed(this, by);
         AddEvent(userConfirmed);
     }
@@ -60,7 +61,7 @@ public class User : AggregateRoot<User, Guid, Guid>
         string pictureUri)
     {
         if (!IsWritable())
-            throw new Exception("User readonly");
+            throw new AggregateReadOnlyException("User readonly");
         if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
             throw new ArgumentException("FirstName or LastName may not be empty");
         var userPersonalInformationUpdated =
@@ -71,7 +72,7 @@ public class User : AggregateRoot<User, Guid, Guid>
     public void UpdateEmail(Guid by, string email)
     {
         if (!IsWritable())
-            throw new Exception("User readonly");
+            throw new AggregateReadOnlyException("User readonly");
         if (string.IsNullOrWhiteSpace(email))
             throw new ArgumentException("Email may not be empty");
         var userEmailUpdated =

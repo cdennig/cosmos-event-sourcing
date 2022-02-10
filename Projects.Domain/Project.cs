@@ -1,6 +1,7 @@
 ﻿using Projects.Domain.Events;
 using ES.Shared.Aggregate;
 using ES.Shared.Events;
+using ES.Shared.Exceptions;
 
 namespace Projects.Domain;
 
@@ -63,6 +64,8 @@ public class Project : TenantAggregateRoot<Guid, Project, Guid, Guid>
     {
         if (Status != ProjectStatus.New)
             throw new ArgumentException("Project cannot be started in current state.");
+        if (!IsWritable())
+            throw new AggregateReadOnlyException("Project readonly");
         var ps = new ProjectStarted(this, by, DateTimeOffset.UtcNow);
         AddEvent(ps);
     }
@@ -71,6 +74,8 @@ public class Project : TenantAggregateRoot<Guid, Project, Guid, Guid>
     {
         if (Status is not ProjectStatus.Started and not ProjectStatus.Resumed)
             throw new ArgumentException("Project cannot be paused in current state.");
+        if (!IsWritable())
+            throw new AggregateReadOnlyException("Project readonly");
         var pp = new ProjectPaused(this, by);
         AddEvent(pp);
     }
@@ -79,6 +84,8 @@ public class Project : TenantAggregateRoot<Guid, Project, Guid, Guid>
     {
         if (Status is ProjectStatus.Cancelled or ProjectStatus.Finished)
             throw new ArgumentException("Project cannot be cancelled in current state.");
+        if (!IsWritable())
+            throw new AggregateReadOnlyException("Project readonly");
         var pc = new ProjectCancelled(this, by);
         AddEvent(pc);
     }
@@ -87,6 +94,8 @@ public class Project : TenantAggregateRoot<Guid, Project, Guid, Guid>
     {
         if (Status != ProjectStatus.Paused)
             throw new ArgumentException("Project cannot be resumed in current state.");
+        if (!IsWritable())
+            throw new AggregateReadOnlyException("Project readonly");
         var pr = new ProjectResumed(this, by);
         AddEvent(pr);
     }
@@ -95,6 +104,8 @@ public class Project : TenantAggregateRoot<Guid, Project, Guid, Guid>
     {
         if (Status is ProjectStatus.Finished or ProjectStatus.Cancelled or ProjectStatus.New)
             throw new ArgumentException("Project cannot be finished in current state.");
+        if (!IsWritable())
+            throw new AggregateReadOnlyException("Project readonly");
         var pf = new ProjectFinished(this, by, DateTimeOffset.UtcNow);
         AddEvent(pf);
     }
@@ -104,7 +115,7 @@ public class Project : TenantAggregateRoot<Guid, Project, Guid, Guid>
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Project title cannot be empty.");
         if (!IsWritable())
-            throw new Exception("Project readonly");
+            throw new AggregateReadOnlyException("Project readonly");
         var pdes = new ProjectDescriptionsUpdated(this, by, title, description);
         AddEvent(pdes);
     }
@@ -114,7 +125,7 @@ public class Project : TenantAggregateRoot<Guid, Project, Guid, Guid>
         if (endDate <= startDate)
             throw new ArgumentException("Project end date cannot be lower than start date.");
         if (!IsWritable())
-            throw new Exception("Project readonly");
+            throw new AggregateReadOnlyException("Project readonly");
         var pdates = new ProjectDatesUpdated(this, by, startDate, endDate);
         AddEvent(pdates);
     }
@@ -122,7 +133,7 @@ public class Project : TenantAggregateRoot<Guid, Project, Guid, Guid>
     public void SetPriority(Guid by, ProjectPriority priority)
     {
         if (!IsWritable())
-            throw new Exception("Project readonly");
+            throw new AggregateReadOnlyException("Project readonly");
         var pprio = new ProjectPriorityUpdated(this, by, priority);
         AddEvent(pprio);
     }

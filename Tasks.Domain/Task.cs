@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using ES.Shared.Aggregate;
 using ES.Shared.Events;
+using ES.Shared.Exceptions;
 using Tasks.Domain.Events;
 
 namespace Tasks.Domain;
@@ -69,7 +70,7 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Task title cannot be empty.");
         if (!IsWritable())
-            throw new Exception("Task readonly");
+            throw new AggregateReadOnlyException("Task readonly");
         var descriptionsUpdated = new TaskDescriptionsUpdated(this, by, title, description);
         AddEvent(descriptionsUpdated);
     }
@@ -79,7 +80,7 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
         if (endDate <= startDate)
             throw new ArgumentException("Task end date cannot be lower than start date.");
         if (!IsWritable())
-            throw new Exception("Task readonly");
+            throw new AggregateReadOnlyException("Task readonly");
         var datesUpdated = new TaskDatesUpdated(this, by, startDate, endDate);
         AddEvent(datesUpdated);
     }
@@ -87,7 +88,7 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
     public void SetPriority(Guid by, TaskPriority priority)
     {
         if (!IsWritable())
-            throw new Exception("Task readonly");
+            throw new AggregateReadOnlyException("Task readonly");
         var priorityUpdated = new TaskPriorityUpdated(this, by, priority);
         AddEvent(priorityUpdated);
     }
@@ -112,7 +113,7 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
     public void SetComplete(Guid by)
     {
         if (!IsWritable())
-            throw new ArgumentException("Task readonly.");
+            throw new AggregateReadOnlyException("Task readonly.");
         var completed = new TaskSetComplete(this, by);
         AddEvent(completed);
     }
@@ -128,7 +129,7 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
     public void SetTimeEstimation(Guid by, ulong estimation)
     {
         if (!IsWritable())
-            throw new ArgumentException("Task readonly.");
+            throw new AggregateReadOnlyException("Task readonly.");
         var estimated = new TaskEstimated(this, by, estimation);
         AddEvent(estimated);
     }
@@ -138,7 +139,7 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
         if (projectId == Guid.Empty)
             throw new ArgumentException("Invalid Project Id.");
         if (!IsWritable())
-            throw new Exception("Task readonly");
+            throw new AggregateReadOnlyException("Task readonly");
         var assigned = new TaskAssignedToProject(this, by, projectId);
         AddEvent(assigned);
     }
@@ -147,7 +148,7 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
     public void RemoveFromProject(Guid by)
     {
         if (!IsWritable())
-            throw new Exception("Task readonly");
+            throw new AggregateReadOnlyException("Task readonly");
         var removedFromProject = new TaskRemovedFromProject(this, by);
         AddEvent(removedFromProject);
     }
@@ -155,7 +156,7 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
     public void LogTime(Guid by, ulong duration, string comment, DateOnly day)
     {
         if (!IsWritable())
-            throw new Exception("Task readonly");
+            throw new AggregateReadOnlyException("Task readonly");
         var timeLogged = new TaskTimeLogged(this, by, day, comment, duration);
         AddEvent(timeLogged);
     }
@@ -163,7 +164,7 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
     public void DeleteTimeLogEntry(Guid by, Guid entryId)
     {
         if (!IsWritable())
-            throw new Exception("Task readonly");
+            throw new AggregateReadOnlyException("Task readonly");
         var timeLogEntryUpdated = new TaskTimeLogEntryDeleted(this, entryId, by);
         AddEvent(timeLogEntryUpdated);
     }
@@ -171,7 +172,7 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
     public void ChangeTimeLogEntryComment(Guid by, Guid entryId, string comment)
     {
         if (!IsWritable())
-            throw new Exception("Task readonly");
+            throw new AggregateReadOnlyException("Task readonly");
         var tle = TimeLogEntries.SingleOrDefault(t => t.Id == entryId);
         if (tle == null) throw new ArgumentException($"TimeLog entry not found: {entryId}");
         var tleCommentChanged = new TaskTimeLogEntryCommentChanged(this, tle, by, comment);
