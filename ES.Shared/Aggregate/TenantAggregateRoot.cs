@@ -53,7 +53,7 @@ public abstract class TenantAggregateRoot<TTenantKey, TAggregate, TKey, TPrincip
         }
     }
 
-    protected void BatchAddEvents(IEnumerable<ITenantDomainEvent<TTenantKey, TKey, TPrincipalKey>> @events)
+    private void BatchAddEvents(IEnumerable<ITenantDomainEvent<TTenantKey, TKey, TPrincipalKey>> @events)
     {
         var tenantDomainEvents = @events.ToList();
         if (tenantDomainEvents.First().Version != Version)
