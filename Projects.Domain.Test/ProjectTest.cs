@@ -151,7 +151,8 @@ public class ProjectTest
         p.PauseProject(user);
         p.ResumeProject(user);
         p.FinishProject(user);
-        var pNew = TenantAggregateRoot<Guid, Project, Guid, Guid>.Create(p.TenantId, p.Id, p.DomainEvents);
+        var factory = new TenantAggregateRootFactory<Guid, Project, Guid, Guid>();
+        var pNew = factory.Create(p.TenantId, p.Id, p.DomainEvents);
         Assert.Equal(p.Status, pNew.Status);
         Assert.Equal(p.Description, pNew.Description);
         Assert.Equal(p.Priority, pNew.Priority);

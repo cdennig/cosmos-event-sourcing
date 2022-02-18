@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ES.Infrastructure.Repository;
+using ES.Shared.Aggregate;
 using ES.Shared.Events;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
@@ -45,7 +46,10 @@ public class TenantIntegrationTestFixture : IDisposable
 
         var domainEventsFactory = new TenantDomainEventsFactory<Guid, Guid, Guid>();
         domainEventsFactory.Initialize(new List<Type>() { typeof(Project) });
-        Repository = new CosmosTenantEventsRepository<Guid, Project, Guid, Guid>(Container, domainEventsFactory);
+        var tenantAggregateRootFactory = new TenantAggregateRootFactory<Guid, Project, Guid, Guid>();
+        Repository =
+            new CosmosTenantEventsRepository<Guid, Project, Guid, Guid>(Container, domainEventsFactory,
+                tenantAggregateRootFactory);
     }
 
     public void Dispose()

@@ -62,6 +62,13 @@ public class
         foreach (var type in _assemblies.Select(assembly => assembly.GetTypes()).SelectMany(types => types))
         {
             if (type.GetCustomAttribute(typeof(EventAttribute)) is not EventAttribute attr) continue;
+            
+            // does the type implement ITenantDomainEvent<TTenantKey, TKey, TPrincipalKey>?
+            if (!type.GetInterfaces().Any(x =>
+                    x.IsGenericType &&
+                    x.GetGenericTypeDefinition() ==
+                    typeof(ITenantDomainEvent<TTenantKey, TKey, TPrincipalKey>).GetGenericTypeDefinition())) continue;
+            
             var constructorInfo = type.GetConstructor(
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 new[]
@@ -69,9 +76,10 @@ public class
                     typeof(string), typeof(TTenantKey), typeof(TPrincipalKey), typeof(TKey), typeof(long),
                     typeof(DateTimeOffset)
                 });
-            if (constructorInfo == null)
-                throw new ApplicationException(
-                    $"No constructor found for: {attr.EventType} / {attr.EventVersion}.");
+            
+            if (constructorInfo == null) // no suitable constructor found.
+                continue;
+            
             if (_eventConstructors.ContainsKey(attr.EventType))
             {
                 if (_eventConstructors[attr.EventType] != null &&

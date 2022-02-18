@@ -18,8 +18,9 @@ public class Project : TenantAggregateRoot<Guid, Project, Guid, Guid>
 
     public override string ResourceId => $"/t/{TenantId}/projects/{Id}";
 
-    private Project(Guid tenantId, Guid projectId) : base(tenantId,
-        projectId)
+    private Project(Guid tenantId, Guid projectId, IEnumerable<ITenantDomainEvent<Guid, Guid, Guid>> @events) : base(
+        tenantId,
+        projectId, @events)
     {
     }
 
@@ -156,7 +157,7 @@ public class Project : TenantAggregateRoot<Guid, Project, Guid, Guid>
 
     protected override void Apply(ITenantDomainEvent<Guid, Guid, Guid> @event)
     {
-        ApplyEvent((dynamic) @event);
+        ApplyEvent((dynamic)@event);
     }
 
     private void ApplyEvent(ProjectCreated projectCreated)

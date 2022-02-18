@@ -37,7 +37,7 @@ public class IntegrationTests : IClassFixture<IntegrationTestFixture>
     {
         var cer = _fixture.Repository;
         var user = await cer.RehydrateAsync(_fixture.CurrentId);
-        user.UpdateEmail(_fixture.UserId, "john.doe@company.com");
+        user.UpdateEmail(_fixture.UserId, "johnny.doe@company.com");
         await cer.AppendAsync(user);
     }
 }

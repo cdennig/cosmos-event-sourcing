@@ -8,7 +8,7 @@ namespace Identity.Domain;
 
 public class User : AggregateRoot<User, Guid, Guid>
 {
-    private User(Guid id) : base(id)
+    private User(Guid id, IEnumerable<IDomainEvent<Guid, Guid>> @events) : base(id, events)
     {
     }
 
@@ -68,7 +68,7 @@ public class User : AggregateRoot<User, Guid, Guid>
             new UserPersonalInformationUpdated(this, by, firstName, lastName, description, pictureUri);
         AddEvent(userPersonalInformationUpdated);
     }
-    
+
     public void UpdateEmail(Guid by, string email)
     {
         if (!IsWritable())
@@ -79,8 +79,8 @@ public class User : AggregateRoot<User, Guid, Guid>
             new UserEmailUpdated(this, by, email);
         AddEvent(userEmailUpdated);
     }
-    
-    
+
+
     public void DeleteUser(Guid by)
     {
         if (Deleted)
@@ -99,7 +99,7 @@ public class User : AggregateRoot<User, Guid, Guid>
 
     protected override void Apply(IDomainEvent<Guid, Guid> @event)
     {
-        ApplyEvent((dynamic) @event);
+        ApplyEvent((dynamic)@event);
     }
 
     private void ApplyEvent(UserCreated userCreated)
@@ -130,21 +130,21 @@ public class User : AggregateRoot<User, Guid, Guid>
         ModifiedBy = userPersonalInformationUpdated.RaisedBy;
         PictureUri = userPersonalInformationUpdated.PictureUri;
     }
-    
+
     private void ApplyEvent(UserEmailUpdated userEmailUpdated)
     {
         Email = userEmailUpdated.Email;
         ModifiedAt = userEmailUpdated.Timestamp;
         ModifiedBy = userEmailUpdated.RaisedBy;
     }
-    
+
     private void ApplyEvent(UserDeleted userEmailUpdated)
     {
         Deleted = true;
         DeletedAt = userEmailUpdated.Timestamp;
         DeletedBy = userEmailUpdated.RaisedBy;
     }
-    
+
     private void ApplyEvent(UserUndeleted userUndeleted)
     {
         Deleted = false;

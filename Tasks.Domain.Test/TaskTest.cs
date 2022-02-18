@@ -160,7 +160,8 @@ public class TaskTest
         task.SetTimeEstimation(user, 960);
         var day = DateOnly.FromDateTime(DateTime.Now);
         task.LogTime(user, 180, "First time log entry", day);
-        var newTask = TenantAggregateRoot<Guid, Task, Guid, Guid>.Create(tenantId, taskId, task.DomainEvents);
+        var factory = new TenantAggregateRootFactory<Guid, Task, Guid, Guid>();
+        var newTask = factory.Create(tenantId, taskId, task.DomainEvents);
         Assert.Equal(task.TimeEstimation, newTask.TimeEstimation);
         Assert.Equal(newTask.TimeLogEntries.Count, task.TimeLogEntries.Count);
         var tle = newTask.TimeLogEntries.First();
@@ -210,7 +211,7 @@ public class TaskTest
         var task = Task.Initialize(tenantId, user, taskId, "Test Task", "", projectId);
         var day = DateOnly.FromDateTime(DateTime.Now);
         task.LogTime(user, 180, "First time log entry", day);
-        void act() => task.ChangeTimeLogEntryComment(user, Guid.NewGuid(), "New comment");
-        Assert.Throws<ArgumentException>(act);
+        void Act() => task.ChangeTimeLogEntryComment(user, Guid.NewGuid(), "New comment");
+        Assert.Throws<ArgumentException>(Act);
     }
 }

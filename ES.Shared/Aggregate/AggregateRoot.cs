@@ -12,9 +12,15 @@ public abstract class AggregateRoot<TAggregate, TKey, TPrincipalKey> :
 {
     private readonly ConcurrentQueue<IDomainEvent<TKey, TPrincipalKey>> _events = new();
     private readonly object _updateEventsLock = new object();
-    
+
     protected AggregateRoot(TKey id) : base(id)
     {
+    }
+
+    protected AggregateRoot(TKey id,
+        IEnumerable<IDomainEvent<TKey, TPrincipalKey>> @events) : base(id)
+    {
+        BatchAddEvents(@events);
     }
 
     public IReadOnlyCollection<IDomainEvent<TKey, TPrincipalKey>> DomainEvents =>
@@ -82,35 +88,4 @@ public abstract class AggregateRoot<TAggregate, TKey, TPrincipalKey> :
     }
 
     protected abstract void Apply(IDomainEvent<TKey, TPrincipalKey> @event);
-
-    private static readonly ConstructorInfo ConstructorInfo;
-
-    static AggregateRoot()
-    {
-        var aggregateType = typeof(TAggregate);
-        ConstructorInfo = aggregateType.GetConstructor(
-                              BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public,
-                              null, new[] {typeof(TKey)}, Array.Empty<ParameterModifier>()) ??
-                          throw new InvalidOperationException();
-        if (null == ConstructorInfo)
-            throw new InvalidOperationException(
-                $"Unable to find required private constructor for Aggregate of type '{aggregateType.Name}'");
-    }
-
-    public static TAggregate Create(TKey id,
-        IEnumerable<IDomainEvent<TKey, TPrincipalKey>> events)
-    {
-        if (null == id)
-            throw new ArgumentNullException(nameof(id));
-        if (null == events || !events.Any())
-            throw new ArgumentNullException(nameof(events));
-        var result = (TAggregate) ConstructorInfo.Invoke(new object[] {id});
-
-        if (result is AggregateRoot<TAggregate, TKey, TPrincipalKey> baseAggregate)
-            baseAggregate.BatchAddEvents(events);
-        
-        result.ClearEvents();
-
-        return result;
-    }
 }

@@ -8,7 +8,8 @@ namespace Identity.Domain;
 
 public class Group : TenantAggregateRoot<Guid, Group, Guid, Guid>
 {
-    private Group(Guid tenantId, Guid groupId) : base(tenantId, groupId)
+    private Group(Guid tenantId, Guid groupId, IEnumerable<ITenantDomainEvent<Guid, Guid, Guid>> @events) : base(
+        tenantId, groupId, @events)
     {
     }
 

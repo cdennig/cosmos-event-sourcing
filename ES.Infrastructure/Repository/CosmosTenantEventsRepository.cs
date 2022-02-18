@@ -10,7 +10,8 @@ using Container = Microsoft.Azure.Cosmos.Container;
 namespace ES.Infrastructure.Repository;
 
 public class
-    CosmosTenantEventsRepository<TTenantKey, TAggregate, TKey, TPrincipalKey> : ITenantEventsRepository<TTenantKey, TAggregate, TKey
+    CosmosTenantEventsRepository<TTenantKey, TAggregate, TKey, TPrincipalKey> : ITenantEventsRepository<TTenantKey,
+        TAggregate, TKey
         , TPrincipalKey>
     where TAggregate : class, ITenantAggregateRoot<TTenantKey, TKey, TPrincipalKey>
 {
@@ -18,11 +19,17 @@ public class
 
     private readonly ITenantDomainEventsFactory<TTenantKey, TKey, TPrincipalKey> _domainEventsFactory;
 
+    private readonly ITenantAggregateRootFactory<TTenantKey, TAggregate, TKey, TPrincipalKey>
+        _tenantAggregateRootFactory;
+
     public CosmosTenantEventsRepository(Container eventsContainer,
-        ITenantDomainEventsFactory<TTenantKey, TKey, TPrincipalKey> domainEventsFactory)
+        ITenantDomainEventsFactory<TTenantKey, TKey, TPrincipalKey> domainEventsFactory,
+        ITenantAggregateRootFactory<TTenantKey,
+            TAggregate, TKey, TPrincipalKey> tenantAggregateRootFactory)
     {
         _eventsContainer = eventsContainer;
         _domainEventsFactory = domainEventsFactory;
+        _tenantAggregateRootFactory = tenantAggregateRootFactory;
     }
 
     public async Task AppendAsync(TAggregate aggregateRoot, CancellationToken cancellationToken = default)
@@ -31,30 +38,30 @@ public class
 
         if (domainEvents.Count == 0) return;
 
-        var pk = new PartitionKey(aggregateRoot.Id.ToString());
+        var pk = new PartitionKey(aggregateRoot.Id?.ToString());
 
-        const string sqlQueryText =
-            "SELECT VALUE(MAX(c.version)) FROM c  WHERE c.type = @type AND c.tenantId = @tenantId";
-
-        var queryDefinition = new QueryDefinition(sqlQueryText).WithParameter("@type", "EVENT")
-            .WithParameter("@tenantId", aggregateRoot.TenantId.ToString());
-
-        var fi = _eventsContainer.GetItemQueryIterator<long>(queryDefinition, null,
-            new QueryRequestOptions {PartitionKey = pk});
-
-        var maxVersion = -1L;
-        var nextVersion = domainEvents.First().Version;
-
-        if (fi.HasMoreResults)
-        {
-            var versionResponse = await fi.ReadNextAsync(cancellationToken);
-            if (versionResponse.Count > 0)
-            {
-                maxVersion = versionResponse.Single();
-            }
-        }
-
-        if (maxVersion >= nextVersion) throw new ApplicationException("Version mismatch!");
+        // const string sqlQueryText =
+        //     "SELECT VALUE(MAX(c.version)) FROM c  WHERE c.type = @type AND c.tenantId = @tenantId";
+        //
+        // var queryDefinition = new QueryDefinition(sqlQueryText).WithParameter("@type", "EVENT")
+        //     .WithParameter("@tenantId", aggregateRoot.TenantId.ToString());
+        //
+        // var fi = _eventsContainer.GetItemQueryIterator<long>(queryDefinition, null,
+        //     new QueryRequestOptions { PartitionKey = pk });
+        //
+        // var maxVersion = -1L;
+        // var nextVersion = domainEvents.First().Version;
+        //
+        // if (fi.HasMoreResults)
+        // {
+        //     var versionResponse = await fi.ReadNextAsync(cancellationToken);
+        //     if (versionResponse.Count > 0)
+        //     {
+        //         maxVersion = versionResponse.Single();
+        //     }
+        // }
+        //
+        // if (maxVersion >= nextVersion) throw new ApplicationException("Version mismatch!");
 
         var tb = _eventsContainer.CreateTransactionalBatch(pk);
         foreach (var @event in domainEvents)
@@ -100,16 +107,18 @@ public class
             using JsonTextReader jtr = new(sr);
             JObject result = await JObject.LoadAsync(jtr, cancellationToken);
             var documents = result["Documents"];
+            if (documents == null)
+                throw new NullReferenceException("Got invalid response from event store.");
             events.AddRange(documents.Select(document =>
                 _domainEventsFactory.BuildEvent(document["eventType"].ToString(),
-                    (double) document["eventVersion"],
+                    (double)document["eventVersion"],
                     document["tenantId"].ToString(),
                     document["raisedBy"].ToString(),
                     document["aggregateId"].ToString(), document["aggregateType"].ToString(),
-                    document["timestamp"].ToString(), (long) document["version"], (JObject) document["event"])));
+                    document["timestamp"].ToString(), (long)document["version"], (JObject)document["event"])));
         }
 
-        var aggregateRoot = TenantAggregateRoot<TTenantKey, TAggregate, TKey, TPrincipalKey>.Create(tenantId, id, events);
+        var aggregateRoot = _tenantAggregateRootFactory.Create(tenantId, id, events);
         return aggregateRoot;
     }
 }

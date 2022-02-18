@@ -17,12 +17,15 @@ public class
     private readonly Container _eventsContainer;
 
     private readonly IDomainEventsFactory<TKey, TPrincipalKey> _domainEventsFactory;
+    private readonly IAggregateRootFactory<TAggregate, TKey, TPrincipalKey> _aggregateRootFactory;
 
     public CosmosEventsRepository(Container eventsContainer,
-        IDomainEventsFactory<TKey, TPrincipalKey> domainEventsFactory)
+        IDomainEventsFactory<TKey, TPrincipalKey> domainEventsFactory,
+        IAggregateRootFactory<TAggregate, TKey, TPrincipalKey> aggregateRootFactory)
     {
         _eventsContainer = eventsContainer;
         _domainEventsFactory = domainEventsFactory;
+        _aggregateRootFactory = aggregateRootFactory;
     }
 
     public async Task AppendAsync(TAggregate aggregateRoot, CancellationToken cancellationToken = default)
@@ -31,29 +34,29 @@ public class
 
         if (domainEvents.Count == 0) return;
 
-        var pk = new PartitionKey(aggregateRoot.Id.ToString());
+        var pk = new PartitionKey(aggregateRoot.Id?.ToString());
 
-        const string sqlQueryText =
-            "SELECT VALUE(MAX(c.version)) FROM c  WHERE c.type = @type";
-
-        var queryDefinition = new QueryDefinition(sqlQueryText).WithParameter("@type", "EVENT");
-
-        var fi = _eventsContainer.GetItemQueryIterator<long>(queryDefinition, null,
-            new QueryRequestOptions {PartitionKey = pk});
-
-        var maxVersion = -1L;
-        var nextVersion = domainEvents.First().Version;
-
-        if (fi.HasMoreResults)
-        {
-            var versionResponse = await fi.ReadNextAsync(cancellationToken);
-            if (versionResponse.Count > 0)
-            {
-                maxVersion = versionResponse.Single();
-            }
-        }
-
-        if (maxVersion >= nextVersion) throw new ApplicationException("Version mismatch!");
+        // const string sqlQueryText =
+        //     "SELECT VALUE(MAX(c.version)) FROM c  WHERE c.type = @type";
+        //
+        // var queryDefinition = new QueryDefinition(sqlQueryText).WithParameter("@type", "EVENT");
+        //
+        // var fi = _eventsContainer.GetItemQueryIterator<long>(queryDefinition, null,
+        //     new QueryRequestOptions { PartitionKey = pk });
+        //
+        // var maxVersion = -1L;
+        // var nextVersion = domainEvents.First().Version;
+        //
+        // if (fi.HasMoreResults)
+        // {
+        //     var versionResponse = await fi.ReadNextAsync(cancellationToken);
+        //     if (versionResponse.Count > 0)
+        //     {
+        //         maxVersion = versionResponse.Single();
+        //     }
+        // }
+        //
+        // if (maxVersion >= nextVersion) throw new ApplicationException("Version mismatch!");
 
         var tb = _eventsContainer.CreateTransactionalBatch(pk);
         foreach (var @event in domainEvents)
@@ -98,16 +101,17 @@ public class
             using JsonTextReader jtr = new(sr);
             JObject result = await JObject.LoadAsync(jtr, cancellationToken);
             var documents = result["Documents"];
+            if (documents == null)
+                throw new NullReferenceException("Got invalid response from event store.");
             events.AddRange(documents.Select(document =>
                 _domainEventsFactory.BuildEvent(document["eventType"].ToString(),
-                    (double) document["eventVersion"],
+                    (double)document["eventVersion"],
                     document["raisedBy"].ToString(),
                     document["aggregateId"].ToString(), document["aggregateType"].ToString(),
-                    document["timestamp"].ToString(), (long) document["version"], (JObject) document["event"])));
+                    document["timestamp"].ToString(), (long)document["version"], (JObject)document["event"])));
         }
 
-        var aggregateRoot =
-            AggregateRoot<TAggregate, TKey, TPrincipalKey>.Create(id, events);
+        var aggregateRoot = _aggregateRootFactory.Create(id, events);
         return aggregateRoot;
     }
 }

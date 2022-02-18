@@ -1,5 +1,6 @@
 ﻿using System;
 using ES.Infrastructure.Repository;
+using ES.Shared.Aggregate;
 using ES.Shared.Repository;
 using MediatR;
 using MediatR.Registration;
@@ -23,6 +24,8 @@ public class TestFixture : IDisposable
     {
         var serviceConfig = new MediatRServiceConfiguration();
         var services = new ServiceCollection()
+            .AddSingleton<ITenantAggregateRootFactory<Guid, Project, Guid, Guid>>(
+                new TenantAggregateRootFactory<Guid, Project, Guid, Guid>())
             .AddScoped<ITenantEventsRepository<Guid, Project, Guid, Guid>,
                 InMemoryTenantEventsRepository<Guid, Project, Guid, Guid>>()
             .AddScoped<IRequestHandler<CreateProjectCommand, CreateProjectCommandResponse>,

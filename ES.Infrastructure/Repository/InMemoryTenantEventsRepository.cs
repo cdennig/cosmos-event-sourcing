@@ -5,10 +5,20 @@ using ES.Shared.Repository;
 namespace ES.Infrastructure.Repository;
 
 public class
-    InMemoryTenantEventsRepository<TTenantKey, TAggregate, TKey, TPrincipalKey> : ITenantEventsRepository<TTenantKey, TAggregate, TKey, TPrincipalKey>
+    InMemoryTenantEventsRepository<TTenantKey, TAggregate, TKey, TPrincipalKey> : ITenantEventsRepository<TTenantKey,
+        TAggregate, TKey, TPrincipalKey>
     where TAggregate : class, ITenantAggregateRoot<TTenantKey, TKey, TPrincipalKey>
 {
+    private readonly ITenantAggregateRootFactory<TTenantKey,
+        TAggregate, TKey, TPrincipalKey> _tenantAggregateRootFactory;
+
     private Dictionary<string, List<TenantEventData<TTenantKey, TKey, TPrincipalKey>>> _events = new();
+
+    public InMemoryTenantEventsRepository(ITenantAggregateRootFactory<TTenantKey,
+        TAggregate, TKey, TPrincipalKey> tenantAggregateRootFactory)
+    {
+        _tenantAggregateRootFactory = tenantAggregateRootFactory;
+    }
 
     public Task AppendAsync(TAggregate aggregateRoot, CancellationToken cancellationToken = default)
     {
@@ -47,7 +57,8 @@ public class
         }
 
         var events = currentEvents.Select(eventData => eventData.Event).ToList();
-        var aggregateRoot = TenantAggregateRoot<TTenantKey, TAggregate, TKey, TPrincipalKey>.Create(tenantId, id, events);
+        // var aggregateRoot = TenantAggregateRoot<TTenantKey, TAggregate, TKey, TPrincipalKey>.Create(tenantId, id, events);
+        var aggregateRoot = _tenantAggregateRootFactory.Create(tenantId, id, events);
         return Task.FromResult(aggregateRoot);
     }
 }

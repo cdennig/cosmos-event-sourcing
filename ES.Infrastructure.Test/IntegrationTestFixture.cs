@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ES.Infrastructure.Repository;
+using ES.Shared.Aggregate;
 using ES.Shared.Events;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
@@ -44,7 +45,10 @@ public class IntegrationTestFixture : IDisposable
 
         var domainEventsFactory = new DomainEventsFactory<Guid, Guid>();
         domainEventsFactory.Initialize(new List<Type> { typeof(Identity.Domain.User) });
-        Repository = new CosmosEventsRepository<Identity.Domain.User, Guid, Guid>(Container, domainEventsFactory);
+        var aggregateRootFactory = new AggregateRootFactory<Identity.Domain.User, Guid, Guid>();
+        Repository =
+            new CosmosEventsRepository<Identity.Domain.User, Guid, Guid>(Container, domainEventsFactory,
+                aggregateRootFactory);
     }
 
     public void Dispose()

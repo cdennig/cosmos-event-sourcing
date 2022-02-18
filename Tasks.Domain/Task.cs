@@ -32,8 +32,8 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
             ? $"/t/{TenantId}/tasks/{Id}"
             : $"/t/{TenantId}/projects/{ProjectId}/tasks/{Id}";
 
-    private Task(Guid tenantId, Guid taskId) : base(tenantId,
-        taskId)
+    private Task(Guid tenantId, Guid taskId, IEnumerable<ITenantDomainEvent<Guid, Guid, Guid>> @events) : base(
+        tenantId, taskId, @events)
     {
     }
 
@@ -181,7 +181,7 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
 
     protected override void Apply(ITenantDomainEvent<Guid, Guid, Guid> @event)
     {
-        ApplyEvent((dynamic) @event);
+        ApplyEvent((dynamic)@event);
     }
 
     private void ApplyEvent(TaskCreated created)

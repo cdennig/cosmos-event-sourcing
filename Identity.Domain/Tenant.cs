@@ -7,7 +7,7 @@ namespace Identity.Domain;
 
 public class Tenant : AggregateRoot<Tenant, Guid, Guid>
 {
-    private Tenant(Guid id) : base(id)
+    private Tenant(Guid id, IEnumerable<IDomainEvent<Guid, Guid>> @events) : base(id, events)
     {
     }
 

@@ -9,7 +9,13 @@ public class
         TPrincipalKey>
     where TAggregate : class, IAggregateRoot<TKey, TPrincipalKey>
 {
+    private readonly IAggregateRootFactory<TAggregate, TKey, TPrincipalKey> _aggregateRootFactory;
     private Dictionary<string, List<EventData<TKey, TPrincipalKey>>> _events = new();
+
+    public InMemoryEventsRepository(IAggregateRootFactory<TAggregate, TKey, TPrincipalKey> aggregateRootFactory)
+    {
+        _aggregateRootFactory = aggregateRootFactory;
+    }
 
     public Task AppendAsync(TAggregate aggregateRoot, CancellationToken cancellationToken = default)
     {
@@ -48,8 +54,7 @@ public class
         }
 
         var events = currentEvents.Select(eventData => eventData.Event).ToList();
-        var aggregateRoot =
-            AggregateRoot<TAggregate, TKey, TPrincipalKey>.Create(id, events);
+        var aggregateRoot = _aggregateRootFactory.Create(id, events);
         return Task.FromResult(aggregateRoot);
     }
 }

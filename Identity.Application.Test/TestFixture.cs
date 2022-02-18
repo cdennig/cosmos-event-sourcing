@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using ES.Infrastructure.Repository;
+using ES.Shared.Aggregate;
 using ES.Shared.Repository;
 using Identity.Domain;
 
@@ -17,7 +18,7 @@ public class TestFixture : IDisposable
 
     public TestFixture()
     {
-        CurrentRepo = new InMemoryEventsRepository<User, Guid, Guid>();
+        CurrentRepo = new InMemoryEventsRepository<User, Guid, Guid>(new AggregateRootFactory<User, Guid, Guid>());
         CurrentValidUserId = Guid.NewGuid();
         CurrentCreatedBy = Guid.NewGuid();
         CurrentInValidUserId = Guid.NewGuid();
