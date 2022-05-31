@@ -1,6 +1,9 @@
-﻿using ES.Shared.Aggregate;
+﻿using System.Collections.Immutable;
+using ES.Shared.Aggregate;
 using ES.Shared.Events;
+using ES.Shared.Exceptions;
 using Identity.Domain.Events.Role;
+using Identity.Domain.Events.Tenant;
 
 namespace Identity.Domain;
 
@@ -31,10 +34,36 @@ public class Role : TenantAggregateRoot<Guid, Role, Guid, Guid>
     public bool IsBuiltIn { get; private set; }
     public List<string> Actions { get; private set; }
     public List<string> NotActions { get; private set; }
-
+    
+    private readonly List<RoleAssignment> _roleAssignments = new();
+    public IReadOnlyCollection<RoleAssignment> RoleAssignments => _roleAssignments.ToImmutableArray();
 
     public override string ResourceId => $"/t/{TenantId}/roles/{Id}";
 
+    public void UpdateGeneralInformation(Guid by, string name, string description)
+    {
+        if (!IsWritable())
+            throw new AggregateReadOnlyException("Role readonly");
+        var informationUpdated = new RoleGeneralInformationUpdated(this, by, name, description);
+        AddEvent(informationUpdated);
+    }
+
+    public void AssignRoleToGroup(Guid by, Guid groupId)
+    {
+        if (!IsWritable())
+            throw new AggregateReadOnlyException("Role readonly");
+        var roleAssignmentAdded = new RoleAssignmentAdded(this, by,groupId);
+        AddEvent(roleAssignmentAdded);
+    } 
+    
+    public void RemoveRoleFromGroup(Guid by, Guid groupId)
+    {
+        if (!IsWritable())
+            throw new AggregateReadOnlyException("Role readonly");
+        var roleAssignmentRemoved = new RoleAssignmentRemoved(this, by,groupId);
+        AddEvent(roleAssignmentRemoved);
+    }
+    
     protected override void Apply(ITenantDomainEvent<Guid, Guid, Guid> @event)
     {
         ApplyEvent((dynamic)@event);
@@ -42,7 +71,7 @@ public class Role : TenantAggregateRoot<Guid, Role, Guid, Guid>
 
     private bool IsWritable()
     {
-        return false;
+        return true;
     }
 
     private void ApplyEvent(RoleCreated roleCreated)
@@ -54,5 +83,32 @@ public class Role : TenantAggregateRoot<Guid, Role, Guid, Guid>
         NotActions = roleCreated.NotActions;
         CreatedAt = roleCreated.Timestamp;
         CreatedBy = roleCreated.RaisedBy;
+    }
+    
+    private void ApplyEvent(RoleGeneralInformationUpdated roleGeneralInformationUpdated)
+    {
+        Name = roleGeneralInformationUpdated.Name;
+        Description = roleGeneralInformationUpdated.Description;
+        ModifiedAt = roleGeneralInformationUpdated.Timestamp;
+        ModifiedBy = roleGeneralInformationUpdated.RaisedBy;
+    }
+    
+    private void ApplyEvent(RoleAssignmentAdded roleAssignmentAdded)
+    {
+        var member = new RoleAssignment(this, roleAssignmentAdded.GroupId);
+        _roleAssignments.Add(member);
+        ModifiedAt = roleAssignmentAdded.Timestamp;
+        ModifiedBy = roleAssignmentAdded.RaisedBy;
+    }
+    
+    private void ApplyEvent(RoleAssignmentRemoved roleAssignmentRemoved)
+    {
+        var assignment = _roleAssignments.Find(m => m.GroupId == roleAssignmentRemoved.GroupId);
+        if (assignment != null)
+        {
+            _roleAssignments.Remove(assignment);
+            ModifiedAt = roleAssignmentRemoved.Timestamp;
+            ModifiedBy = roleAssignmentRemoved.RaisedBy;
+        }
     }
 }

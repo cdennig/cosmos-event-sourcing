@@ -56,7 +56,7 @@ public class GroupTest
         Assert.Equal(u.DomainEvents.Last().RaisedBy, u.ModifiedBy);
 
         Assert.Equal(1, u.GroupMembers.Count);
-        Assert.Equal(createdBy, u.GroupMembers.First().memberId);
+        Assert.Equal(createdBy, u.GroupMembers.First().memberPrincipalId);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class GroupTest
 
         Assert.Equal(0, u.GroupMembers.Count);
     }
-    
+
     [Fact]
     public void Test_0005_Group_RemoveMemberNotInList()
     {
@@ -90,5 +90,34 @@ public class GroupTest
         Assert.NotEqual(u.DomainEvents.Last().RaisedBy, u.ModifiedBy);
 
         Assert.Equal(0, u.GroupMembers.Count);
+    }
+
+    [Fact]
+    public void Test_0006_Group_Delete()
+    {
+        var createdBy = Guid.NewGuid();
+        var tenantId = Guid.NewGuid();
+        var newGroupId = Guid.NewGuid();
+        var u = Group.Initialize(tenantId, createdBy, newGroupId, "Administrators",
+            "Member of this group are org admins.",
+            "");
+        u.DeleteGroup(createdBy);
+        Assert.True(u.Deleted);
+        Assert.Equal(u.DomainEvents.Last().Timestamp, u.DeletedAt);
+        Assert.Equal(u.DomainEvents.Last().RaisedBy, u.DeletedBy);
+    }
+
+    [Fact]
+    public void Test_0007_Group_Undelete()
+    {
+        var createdBy = Guid.NewGuid();
+        var tenantId = Guid.NewGuid();
+        var newGroupId = Guid.NewGuid();
+        var u = Group.Initialize(tenantId, createdBy, newGroupId, "Administrators",
+            "Member of this group are org admins.",
+            "");
+        u.DeleteGroup(createdBy);
+        u.UndeleteGroup(createdBy);
+        Assert.False(u.Deleted);
     }
 }

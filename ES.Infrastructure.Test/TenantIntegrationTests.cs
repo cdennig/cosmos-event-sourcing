@@ -16,6 +16,7 @@ public class TenantIntegrationTests : IClassFixture<TenantIntegrationTestFixture
     }
     
     // [Fact]
+    // [Trait("Category","Integration")]
     // public async void Test_001_Hydrate()
     // {
     //     var cer = _fixture.Repository;
@@ -36,6 +37,7 @@ public class TenantIntegrationTests : IClassFixture<TenantIntegrationTestFixture
     // }
 
     [Fact]
+    [Trait("Category","Integration")]
     public async void Test_002_Rehydrate()
     {
         var cer = _fixture.Repository;
@@ -43,6 +45,7 @@ public class TenantIntegrationTests : IClassFixture<TenantIntegrationTestFixture
     }
 
     [Fact]
+    [Trait("Category","Integration")]
     public async void Test_003_AppendToExistingProject()
     {
         var cer = _fixture.Repository;

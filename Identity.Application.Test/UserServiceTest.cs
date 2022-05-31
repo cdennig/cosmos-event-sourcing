@@ -4,11 +4,11 @@ using Xunit;
 namespace Identity.Application.Test;
 
 [TestCaseOrderer("Identity.Application.Test.AlphabeticalOrderer", "Identity.Application.Test")]
-public class UserServiceTest : IClassFixture<TestFixture>
+public class UserServiceTest : IClassFixture<UserTestFixture>
 {
-    private readonly TestFixture _fixture;
+    private readonly UserTestFixture _fixture;
 
-    public UserServiceTest(TestFixture fixture)
+    public UserServiceTest(UserTestFixture fixture)
     {
         _fixture = fixture;
     }
@@ -36,12 +36,54 @@ public class UserServiceTest : IClassFixture<TestFixture>
         var u = await usvc.IsUserValidAsPrimaryContact(_fixture.CurrentInValidUserId);
         Assert.False(u);
     }
-    
+
     [Fact]
     public async void Test_0004_IsUserValidAsPrimaryContact_With_Deleted_User()
     {
         var usvc = new UserService(_fixture.CurrentRepo);
         var u = await usvc.IsUserValidAsPrimaryContact(_fixture.CurrentDeletedUserId);
         Assert.False(u);
+    }
+
+    [Fact]
+    public async void Test_0005_IsUserValidAsGroupMember_With_Valid_User()
+    {
+        var usvc = new UserService(_fixture.CurrentRepo);
+        var u = await usvc.IsUserValidAsGroupMember(_fixture.CurrentValidUserId);
+        Assert.True(u);
+    }
+
+    [Fact]
+    public async void Test_0006_IsUserValidAsGroupMember_With_Invalid_User()
+    {
+        var usvc = new UserService(_fixture.CurrentRepo);
+        var u = await usvc.IsUserValidAsGroupMember(_fixture.CurrentInValidUserId);
+        Assert.False(u);
+    }
+
+    [Fact]
+    public async void Test_0007_IsUserValidAsGroupMember_With_Deleted_User()
+    {
+        var usvc = new UserService(_fixture.CurrentRepo);
+        var u = await usvc.IsUserValidAsGroupMember(_fixture.CurrentDeletedUserId);
+        Assert.False(u);
+    }
+
+    [Fact]
+    public async void Test_0008_ReadDeletedUser()
+    {
+        var usvc = new UserService(_fixture.CurrentRepo);
+        var u = await usvc.ReadUserFromIdAsync(_fixture.CurrentDeletedUserId);
+        Assert.Null(u);
+    }
+
+
+    [Fact]
+    public async void Test_0009_ReadDeletedUser_On_Purpose()
+    {
+        var usvc = new UserService(_fixture.CurrentRepo);
+        var u = await usvc.ReadUserFromIdAsync(_fixture.CurrentDeletedUserId, true);
+        Assert.NotNull(u);
+        Assert.True(u.Deleted);
     }
 }

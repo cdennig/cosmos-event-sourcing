@@ -56,20 +56,36 @@ public class Group : TenantAggregateRoot<Guid, Group, Guid, Guid>
         AddEvent(giu);
     }
 
-    public void AddGroupMember(Guid by, Guid memberId)
+    public void AddGroupMember(Guid by, Guid memberPrincipalId)
     {
         if (!IsWritable())
             throw new AggregateReadOnlyException("Group is read-only.");
-        var gma = new GroupMemberAdded(this, by, memberId);
+        var gma = new GroupMemberAdded(this, by, memberPrincipalId);
         AddEvent(gma);
     }
 
-    public void RemoveGroupMember(Guid by, Guid memberId)
+    public void RemoveGroupMember(Guid by, Guid memberPrincipalId)
     {
         if (!IsWritable())
             throw new AggregateReadOnlyException("Group is read-only.");
-        var gmr = new GroupMemberRemoved(this, by, memberId);
+        var gmr = new GroupMemberRemoved(this, by, memberPrincipalId);
         AddEvent(gmr);
+    }
+    
+    public void DeleteGroup(Guid by)
+    {
+        if (Deleted)
+            throw new ArgumentException("Group already deleted.");
+        var deleted = new GroupDeleted(this, by);
+        AddEvent(deleted);
+    }
+
+    public void UndeleteGroup(Guid by)
+    {
+        if (!Deleted)
+            throw new ArgumentException("Group not deleted.");
+        var undeleted = new GroupUndeleted(this, by);
+        AddEvent(undeleted);
     }
 
     private void ApplyEvent(GroupCreated groupCreated)
@@ -99,12 +115,26 @@ public class Group : TenantAggregateRoot<Guid, Group, Guid, Guid>
 
     private void ApplyEvent(GroupMemberRemoved groupMemberRemoved)
     {
-        var member = _groupMembers.Find(m => m.memberId == groupMemberRemoved.MemberId);
+        var member = _groupMembers.Find(m => m.memberPrincipalId == groupMemberRemoved.MemberId);
         if (member != null)
         {
             _groupMembers.Remove(member);
             ModifiedAt = groupMemberRemoved.Timestamp;
             ModifiedBy = groupMemberRemoved.RaisedBy;
         }
+    }
+    
+    private void ApplyEvent(GroupDeleted groupDeleted)
+    {
+        Deleted = true;
+        DeletedAt = groupDeleted.Timestamp;
+        DeletedBy = groupDeleted.RaisedBy;
+    }
+    
+    private void ApplyEvent(GroupUndeleted groupUndeleted)
+    {
+        Deleted = false;
+        DeletedAt = groupUndeleted.Timestamp;
+        DeletedBy = groupUndeleted.RaisedBy;
     }
 }

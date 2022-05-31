@@ -138,11 +138,11 @@ public class User : AggregateRoot<User, Guid, Guid>
         ModifiedBy = userEmailUpdated.RaisedBy;
     }
 
-    private void ApplyEvent(UserDeleted userEmailUpdated)
+    private void ApplyEvent(UserDeleted userDeleted)
     {
         Deleted = true;
-        DeletedAt = userEmailUpdated.Timestamp;
-        DeletedBy = userEmailUpdated.RaisedBy;
+        DeletedAt = userDeleted.Timestamp;
+        DeletedBy = userDeleted.RaisedBy;
     }
 
     private void ApplyEvent(UserUndeleted userUndeleted)

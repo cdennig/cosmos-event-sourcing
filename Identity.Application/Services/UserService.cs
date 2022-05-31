@@ -12,17 +12,32 @@ public class UserService : IUserService
         _userEventsRepository = userEventsRepository;
     }
 
-    private Task<User> ReadUserById(Guid userId)
+    private Task<User> ReadUserById(Guid userId, CancellationToken cancellationToken = default)
     {
-        return _userEventsRepository.RehydrateAsync(userId);
+        return _userEventsRepository.RehydrateAsync(userId, cancellationToken);
     }
 
-    public Task<User> ReadUserFromIdAsync(Guid userId)
+    public async Task<User?> ReadUserFromIdAsync(Guid userId, bool includeDeleted = false,
+        CancellationToken cancellationToken = default)
     {
-        return ReadUserById(userId);
+        var user = await ReadUserById(userId, cancellationToken);
+        
+        if (user.Deleted)
+            return includeDeleted ? user : null;
+        return user;
     }
 
     public async Task<bool> IsUserValidAsPrimaryContact(Guid userId)
+    {
+        var user = await ReadUserById(userId);
+        if (user.Deleted)
+            return false;
+        if (user.Status == UserStatus.ConfirmationRequested)
+            return false;
+        return true;
+    }
+
+    public async Task<bool> IsUserValidAsGroupMember(Guid userId)
     {
         var user = await ReadUserById(userId);
         if (user.Deleted)
