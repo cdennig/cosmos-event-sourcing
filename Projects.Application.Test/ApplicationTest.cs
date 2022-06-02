@@ -20,6 +20,7 @@ public class ApplicationTest : IClassFixture<TestFixture>
     {
         var res = await _fixture.CurrentMediator.Send(new CreateProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Description = "Test Project",
             StartDate = DateTimeOffset.Now,
@@ -41,6 +42,7 @@ public class ApplicationTest : IClassFixture<TestFixture>
     {
         var res = await _fixture.CurrentMediator.Send(new CreateProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Description = "Test Project",
             StartDate = DateTimeOffset.Now,
@@ -61,6 +63,7 @@ public class ApplicationTest : IClassFixture<TestFixture>
 
         var res = await _fixture.CurrentMediator.Send(new StartProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });
@@ -79,12 +82,14 @@ public class ApplicationTest : IClassFixture<TestFixture>
 
         var resStart = await _fixture.CurrentMediator.Send(new StartProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });
 
         var res = await _fixture.CurrentMediator.Send(new PauseProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });
@@ -103,17 +108,20 @@ public class ApplicationTest : IClassFixture<TestFixture>
 
         var resStart = await _fixture.CurrentMediator.Send(new StartProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });
 
         var resPause = await _fixture.CurrentMediator.Send(new PauseProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });
         var res = await _fixture.CurrentMediator.Send(new ResumeProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });
@@ -132,12 +140,14 @@ public class ApplicationTest : IClassFixture<TestFixture>
 
         var resStart = await _fixture.CurrentMediator.Send(new StartProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });
 
         var res = await _fixture.CurrentMediator.Send(new FinishProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });
@@ -156,12 +166,14 @@ public class ApplicationTest : IClassFixture<TestFixture>
 
         var resStart = await _fixture.CurrentMediator.Send(new StartProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });
 
         var res = await _fixture.CurrentMediator.Send(new CancelProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });
@@ -180,6 +192,7 @@ public class ApplicationTest : IClassFixture<TestFixture>
 
         var res = await _fixture.CurrentMediator.Send(new SetProjectDescriptionsCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate,
             Description = "New Description",
@@ -202,6 +215,7 @@ public class ApplicationTest : IClassFixture<TestFixture>
         var newEnd = DateTimeOffset.Now.AddYears(10);
         var res = await _fixture.CurrentMediator.Send(new SetProjectDatesCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate,
             StartDate = newStart,
@@ -223,6 +237,7 @@ public class ApplicationTest : IClassFixture<TestFixture>
 
         var res = await _fixture.CurrentMediator.Send(new SetProjectPriorityCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate,
             Priority = ProjectPriority.VeryLow
@@ -242,6 +257,7 @@ public class ApplicationTest : IClassFixture<TestFixture>
 
         var res = await _fixture.CurrentMediator.Send(new DeleteProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });
@@ -260,12 +276,14 @@ public class ApplicationTest : IClassFixture<TestFixture>
 
         await _fixture.CurrentMediator.Send(new DeleteProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });
             
         var res = await _fixture.CurrentMediator.Send(new UndeleteProjectCommand()
         {
+            PrincipalId = _fixture.PrincipalId,
             TenantId = _fixture.TenantId,
             Id = resCreate
         });

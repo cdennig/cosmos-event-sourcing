@@ -1,7 +1,9 @@
 ﻿using System;
+using ES.Infrastructure.Behaviors;
 using ES.Infrastructure.Repository;
 using ES.Shared.Aggregate;
 using ES.Shared.Repository;
+using FluentValidation;
 using MediatR;
 using MediatR.Registration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +19,7 @@ public class TestFixture : IDisposable
     public ITenantEventsRepository<Guid, Project, Guid, Guid> CurrentRepo;
     public Guid CurrentId { get; set; }
     public Guid TenantId => Guid.Parse("c4b355d5-8d4d-4ca2-87ec-0964c63fc103");
+    public Guid PrincipalId => Guid.Parse("3c7a9bd7-89bf-423e-99f5-ee6a59c4b488");
     public IMediator CurrentMediator;
     public ServiceProvider Provider { get; }
 
@@ -28,6 +31,8 @@ public class TestFixture : IDisposable
                 new TenantAggregateRootFactory<Guid, Project, Guid, Guid>())
             .AddScoped<ITenantEventsRepository<Guid, Project, Guid, Guid>,
                 InMemoryTenantEventsRepository<Guid, Project, Guid, Guid>>()
+            .AddValidatorsFromAssembly(typeof(CreateProjectCommand).Assembly)
+            .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>))
             .AddScoped<IRequestHandler<CreateProjectCommand, CreateProjectCommandResponse>,
                 CreateProjectCommandHandler>()
             .AddScoped<IRequestHandler<PauseProjectCommand, PauseProjectCommandResponse>,

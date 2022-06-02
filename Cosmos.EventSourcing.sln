@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.Application", "Ide
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.Application.Test", "Identity.Application.Test\Identity.Application.Test.csproj", "{89604D22-38E6-49EB-90E0-CE539B391EDC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tasks.Application", "Tasks.Application\Tasks.Application.csproj", "{7632BF9E-A261-4194-9043-049FB01C6D83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -84,5 +86,9 @@ Global
 		{89604D22-38E6-49EB-90E0-CE539B391EDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89604D22-38E6-49EB-90E0-CE539B391EDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89604D22-38E6-49EB-90E0-CE539B391EDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7632BF9E-A261-4194-9043-049FB01C6D83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7632BF9E-A261-4194-9043-049FB01C6D83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7632BF9E-A261-4194-9043-049FB01C6D83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7632BF9E-A261-4194-9043-049FB01C6D83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
