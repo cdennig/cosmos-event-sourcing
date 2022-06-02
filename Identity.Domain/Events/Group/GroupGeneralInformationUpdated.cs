@@ -23,7 +23,7 @@ public class GroupGeneralInformationUpdated : TenantDomainEvent<Guid, Domain.Gro
     {
     }
 
-    [JsonProperty] public string Name { get; set; }
-    [JsonProperty] public string Description { get; set; }
-    [JsonProperty] public string PictureUri { get; set; }
+    [JsonProperty] public string Name { get; private set; }
+    [JsonProperty] public string Description { get; private set; }
+    [JsonProperty] public string PictureUri { get; private set; }
 }

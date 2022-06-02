@@ -21,6 +21,6 @@ public class RoleGeneralInformationUpdated : TenantDomainEvent<Guid, Domain.Role
     {
     }
 
-    [JsonProperty] public string Name { get; set; }
-    [JsonProperty] public string Description { get; set; }
+    [JsonProperty] public string Name { get; private set; }
+    [JsonProperty] public string Description { get; private set; }
 }

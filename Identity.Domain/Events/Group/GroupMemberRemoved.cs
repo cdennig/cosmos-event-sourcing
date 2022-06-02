@@ -20,5 +20,5 @@ public class GroupMemberRemoved : TenantDomainEvent<Guid, Domain.Group, Guid, Gu
     {
     }
 
-    [JsonProperty] public Guid MemberId { get; set; }
+    [JsonProperty] public Guid MemberId { get; private set; }
 }

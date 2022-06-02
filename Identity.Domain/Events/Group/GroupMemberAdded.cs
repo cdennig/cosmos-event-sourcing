@@ -20,5 +20,5 @@ public class GroupMemberAdded : TenantDomainEvent<Guid, Domain.Group, Guid, Guid
     {
     }
 
-    [JsonProperty] public Guid MemberId { get; set; }
+    [JsonProperty] public Guid MemberId { get; private set; }
 }

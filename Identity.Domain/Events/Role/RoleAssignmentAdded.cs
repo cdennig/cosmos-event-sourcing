@@ -20,5 +20,5 @@ public class RoleAssignmentAdded : TenantDomainEvent<Guid, Domain.Role, Guid, Gu
     {
     }
 
-    [JsonProperty] public Guid GroupId { get; set; }
+    [JsonProperty] public Guid GroupId { get; private set; }
 }
