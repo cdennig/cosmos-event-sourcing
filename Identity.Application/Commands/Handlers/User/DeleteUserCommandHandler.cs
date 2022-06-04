@@ -20,6 +20,8 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Delet
         var user = await _repository.RehydrateAsync(request.Id, cancellationToken);
         user.DeleteUser(request.PrincipalId);
         
+        await _repository.AppendAsync(user, cancellationToken);
+        
         return new DeleteUserCommandResponse(user.Id, user.Version, user.ResourceId);
     }
 }

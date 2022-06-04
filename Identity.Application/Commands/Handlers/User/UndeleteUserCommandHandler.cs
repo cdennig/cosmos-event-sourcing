@@ -20,6 +20,8 @@ public class UndeleteUserCommandHandler : IRequestHandler<UndeleteUserCommand, U
         var user = await _repository.RehydrateAsync(request.Id, cancellationToken);
         user.UndeleteUser(request.PrincipalId);
         
+        await _repository.AppendAsync(user, cancellationToken);
+        
         return new UndeleteUserCommandResponse(user.Id, user.Version, user.ResourceId);
     }
 }

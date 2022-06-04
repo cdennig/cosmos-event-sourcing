@@ -26,14 +26,21 @@ public class UserApplicationTestFixture : IDisposable
     {
         var serviceConfig = new MediatRServiceConfiguration();
         var services = new ServiceCollection()
-            .AddSingleton<IAggregateRootFactory<Domain.User, Guid, Guid>>(
-                new AggregateRootFactory<Domain.User, Guid, Guid>())
-            .AddScoped<IEventsRepository<Domain.User, Guid, Guid>,
-                InMemoryEventsRepository<Domain.User, Guid, Guid>>()
-            .AddValidatorsFromAssembly(typeof(CreateUserCommand).Assembly)
-            .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>))
-            .AddScoped<IRequestHandler<CreateUserCommand, CreateUserCommandResponse>,
-                CreateUserCommandHandler>();
+                .AddSingleton<IAggregateRootFactory<Domain.User, Guid, Guid>>(
+                    new AggregateRootFactory<Domain.User, Guid, Guid>())
+                .AddScoped<IEventsRepository<Domain.User, Guid, Guid>,
+                    InMemoryEventsRepository<Domain.User, Guid, Guid>>()
+                .AddValidatorsFromAssembly(typeof(CreateUserCommand).Assembly)
+                .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>))
+                .AddScoped<IRequestHandler<CreateUserCommand, CreateUserCommandResponse>, CreateUserCommandHandler>()
+                .AddScoped<IRequestHandler<ConfirmUserCommand, ConfirmUserCommandResponse>, ConfirmUserCommandHandler>()
+                .AddScoped<IRequestHandler<DeleteUserCommand, DeleteUserCommandResponse>, DeleteUserCommandHandler>()
+                .AddScoped<IRequestHandler<UndeleteUserCommand, UndeleteUserCommandResponse>,
+                    UndeleteUserCommandHandler>()
+                .AddScoped<IRequestHandler<UpdateEmailUserCommand, UpdateEmailUserCommandResponse>,
+                    UpdateEmailUserCommandHandler>()
+                .AddScoped<IRequestHandler<UpdatePersonalInformationUserCommand,
+                    UpdatePersonalInformationUserCommandResponse>, UpdatePersonalInformationUserCommandHandler>();
         ServiceRegistrar.AddRequiredServices(services, serviceConfig);
         Provider = services.BuildServiceProvider();
         CurrentMediator = Provider.GetService<IMediator>();

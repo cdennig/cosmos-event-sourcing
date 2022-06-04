@@ -20,6 +20,8 @@ public class ConfirmUserCommandHandler : IRequestHandler<ConfirmUserCommand, Con
         var user = await _repository.RehydrateAsync(request.Id, cancellationToken);
         user.ConfirmUser(request.PrincipalId);
         
+        await _repository.AppendAsync(user, cancellationToken);
+        
         return new ConfirmUserCommandResponse(user.Id, user.Version, user.ResourceId);
     }
 }

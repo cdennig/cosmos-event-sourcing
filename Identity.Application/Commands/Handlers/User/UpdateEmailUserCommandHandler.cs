@@ -21,6 +21,8 @@ public class UpdateEmailUserCommandHandler : IRequestHandler<UpdateEmailUserComm
         var user = await _repository.RehydrateAsync(request.Id, cancellationToken);
         user.UpdateEmail(request.PrincipalId, request.Email);
 
+        await _repository.AppendAsync(user, cancellationToken);
+        
         return new UpdateEmailUserCommandResponse(user.Id, user.Version, user.ResourceId);
     }
 }

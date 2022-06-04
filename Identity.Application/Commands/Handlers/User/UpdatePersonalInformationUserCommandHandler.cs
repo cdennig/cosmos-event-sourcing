@@ -21,7 +21,9 @@ public class UpdatePersonalInformationUserCommandHandler : IRequestHandler<Updat
         var user = await _repository.RehydrateAsync(request.Id, cancellationToken);
         user.UpdatePersonalInformation(request.PrincipalId, request.FirstName, request.LastName, request.Description,
             request.PictureUri);
-
+        
+        await _repository.AppendAsync(user, cancellationToken);
+        
         return new UpdatePersonalInformationUserCommandResponse(user.Id, user.Version, user.ResourceId);
     }
 }
