@@ -56,7 +56,7 @@ public class GroupTest
         Assert.Equal(u.DomainEvents.Last().RaisedBy, u.ModifiedBy);
 
         Assert.Equal(1, u.GroupMembers.Count);
-        Assert.Equal(createdBy, u.GroupMembers.First().memberPrincipalId);
+        Assert.Equal(createdBy, u.GroupMembers.First().MemberPrincipalId);
     }
 
     [Fact]

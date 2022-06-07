@@ -4,11 +4,11 @@ using Xunit;
 namespace Identity.Application.Test;
 
 [TestCaseOrderer("Identity.Application.Test.AlphabeticalOrderer", "Identity.Application.Test")]
-public class GroupServiceTest : IClassFixture<GroupTestFixture>
+public class GroupServiceTest : IClassFixture<GroupServiceTestFixture>
 {
-    private readonly GroupTestFixture _fixture;
+    private readonly GroupServiceTestFixture _fixture;
 
-    public GroupServiceTest(GroupTestFixture fixture)
+    public GroupServiceTest(GroupServiceTestFixture fixture)
     {
         _fixture = fixture;
     }

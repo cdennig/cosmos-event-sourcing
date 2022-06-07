@@ -9,11 +9,11 @@ using Xunit;
 namespace Identity.Application.Test;
 
 [TestCaseOrderer("Identity.Application.Test.AlphabeticalOrderer", "Identity.Application.Test")]
-public class IdentityApplicationTest : IClassFixture<UserApplicationTestFixture>
+public class UserApplicationTest : IClassFixture<UserApplicationTestFixture>
 {
     private readonly UserApplicationTestFixture _fixture;
 
-    public IdentityApplicationTest(UserApplicationTestFixture fixture)
+    public UserApplicationTest(UserApplicationTestFixture fixture)
     {
         _fixture = fixture;
     }

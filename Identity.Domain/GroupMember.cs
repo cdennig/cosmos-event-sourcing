@@ -1,3 +1,3 @@
 ﻿namespace Identity.Domain;
 
-public record GroupMember(Group parentGoup, Guid memberPrincipalId);
+public record GroupMember(Group ParentGoup, Guid MemberPrincipalId);

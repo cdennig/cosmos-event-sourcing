@@ -7,7 +7,7 @@ using Identity.Domain;
 
 namespace Identity.Application.Test;
 
-public class UserTestFixture : IDisposable
+public class UserServiceTestFixture : IDisposable
 {
     public IEventsRepository<User, Guid, Guid> CurrentRepo;
     public Guid CurrentCreatedBy { get; set; }
@@ -16,7 +16,7 @@ public class UserTestFixture : IDisposable
     public Guid CurrentDeletedUserId { get; set; }
     public Guid TenantId => Guid.Parse("c4b355d5-8d4d-4ca2-87ec-0964c63fc103");
 
-    public UserTestFixture()
+    public UserServiceTestFixture()
     {
         CurrentRepo = new InMemoryEventsRepository<User, Guid, Guid>(new AggregateRootFactory<User, Guid, Guid>());
         CurrentValidUserId = Guid.NewGuid();

@@ -115,7 +115,7 @@ public class Group : TenantAggregateRoot<Guid, Group, Guid, Guid>
 
     private void ApplyEvent(GroupMemberRemoved groupMemberRemoved)
     {
-        var member = _groupMembers.Find(m => m.memberPrincipalId == groupMemberRemoved.MemberId);
+        var member = _groupMembers.Find(m => m.MemberPrincipalId == groupMemberRemoved.MemberId);
         if (member != null)
         {
             _groupMembers.Remove(member);
