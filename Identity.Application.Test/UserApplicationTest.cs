@@ -93,7 +93,21 @@ public class IdentityApplicationTest : IClassFixture<UserApplicationTestFixture>
     }
 
     [Fact]
-    async void Test_0004_Update_Email()
+    async void Test_0004_Confirm_User_Validation_Failure()
+    {
+        var userId = await CreateUserAsync();
+
+        Func<Task<ConfirmUserCommandResponse>> func = async () => await _fixture.CurrentMediator.Send(
+            new ConfirmUserCommand()
+            {
+                Id = userId
+            });
+
+        Assert.ThrowsAsync<ValidationException>(func);
+    }
+
+    [Fact]
+    async void Test_0006_Update_Email()
     {
         var userId = await CreateUserAsync();
 
@@ -110,10 +124,10 @@ public class IdentityApplicationTest : IClassFixture<UserApplicationTestFixture>
     }
 
     [Fact]
-    async void Test_0005_Update_Email_Validation_Failure()
+    async void Test_0007_Update_Email_Validation_Failure()
     {
         var userId = await CreateUserAsync();
-        
+
         var func = async () =>
         {
             var res = await _fixture.CurrentMediator.Send(new UpdateEmailUserCommand()
@@ -124,6 +138,48 @@ public class IdentityApplicationTest : IClassFixture<UserApplicationTestFixture>
             });
             return res;
         };
+
+        await Assert.ThrowsAsync<ValidationException>(func);
+    }
+
+    [Fact]
+    async void Test_0008_Update_PersonalInformation()
+    {
+        var userId = await CreateUserAsync();
+
+        var res = await _fixture.CurrentMediator.Send(new UpdatePersonalInformationUserCommand()
+        {
+            PrincipalId = _fixture.PrincipalId,
+            Id = userId,
+            FirstName = "John",
+            LastName = "Bar",
+            Description = "User Description",
+            PictureUri = "https://example.com/pic.jpg"
+        });
+
+        var user = await ReadUserAsync(userId);
+        Assert.NotNull(user);
+        Assert.Equal("John", user.FirstName);
+        Assert.Equal("Bar", user.LastName);
+        Assert.Equal("User Description", user.Description);
+        Assert.Equal("https://example.com/pic.jpg", user.PictureUri);
+    }
+
+    [Fact]
+    async void Test_0009_Update_PersonalInformation_Validation_Failure()
+    {
+        var userId = await CreateUserAsync();
+
+        var func = async () => await _fixture.CurrentMediator.Send(new UpdatePersonalInformationUserCommand()
+        {
+            PrincipalId = _fixture.PrincipalId,
+            Id = userId,
+            FirstName =
+                "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345",
+            LastName = "Bar",
+            Description = "User Description",
+            PictureUri = "https://example.com/pic.jpg"
+        });
 
         await Assert.ThrowsAsync<ValidationException>(func);
     }
