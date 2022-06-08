@@ -42,7 +42,7 @@ public class User : AggregateRoot<User, Guid, Guid>
     public string PictureUri { get; private set; }
     public UserStatus Status { get; private set; }
 
-    public override string ResourceId => $"/users/{Id}";
+    public override string ResourceId => $"/u/{Id}";
 
     private bool IsWritable()
     {

@@ -20,7 +20,7 @@ public class UpdateGeneralInformationGroupCommandHandler : IRequestHandler<Updat
         CancellationToken cancellationToken)
     {
         var group = await _repository.RehydrateAsync(request.TenantId, request.Id, cancellationToken);
-        group.UpdateGeneralInformation(request.PrincipalId, request.Name, request.Description, request.PictureUri);
+        group.UpdateGeneralInformation(request.PrincipalId, request.Name, request.Description, request.PictureUri ?? "");
         await _repository.AppendAsync(group, cancellationToken);
         return new UpdateGeneralInformationGroupCommandResponse(request.TenantId, group.Id, group.Version, group.ResourceId);
     }

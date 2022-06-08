@@ -13,7 +13,7 @@ public class RoleCreated : TenantDomainEvent<Guid, Domain.Role, Guid, Guid>
     {
     }
 
-    public RoleCreated(Domain.Role role, Guid raisedBy, string name, List<string> actions, List<string> notActions,
+    public RoleCreated(Domain.Role role, Guid raisedBy, string name, List<RoleAction> actions, List<RoleAction> notActions,
         string description, bool isBuiltIn) : base(
         role, raisedBy)
     {
@@ -27,6 +27,6 @@ public class RoleCreated : TenantDomainEvent<Guid, Domain.Role, Guid, Guid>
     [JsonProperty] public string Name { get; private set; }
     [JsonProperty] public string Description { get; private set; }
     [JsonProperty] public bool IsBuiltIn { get; private set; }
-    [JsonProperty] public List<string> Actions { get; private set; }
-    [JsonProperty] public List<string> NotActions { get; private set; }
+    [JsonProperty] public List<RoleAction> Actions { get; private set; }
+    [JsonProperty] public List<RoleAction> NotActions { get; private set; }
 }

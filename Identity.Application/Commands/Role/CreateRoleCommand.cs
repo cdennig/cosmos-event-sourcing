@@ -1,4 +1,5 @@
 ﻿using Identity.Application.Commands.Responses.Role;
+using Identity.Domain;
 using MediatR;
 
 namespace Identity.Application.Commands.Role
@@ -10,7 +11,7 @@ namespace Identity.Application.Commands.Role
         public string Name { get; set; }
         public string Description { get; set; }
         public bool IsBuiltIn { get; set; }
-        public List<string> Actions { get; set; }
-        public List<string> NotActions { get; set; }
+        public List<RoleAction> Actions { get; set; }
+        public List<RoleAction> NotActions { get; set; }
     }
 }

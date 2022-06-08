@@ -15,15 +15,15 @@ public class Role : TenantAggregateRoot<Guid, Role, Guid, Guid>
     }
 
     private Role(Guid tenantId, Guid principalId, Guid roleId,
-        string name, List<string> actions, List<string> notActions,
+        string name, List<RoleAction> actions, List<RoleAction> notActions,
         string description = "", bool isBuiltIn = true) : base(tenantId, roleId)
     {
         var uc = new RoleCreated(this, principalId, name, actions, notActions, description, isBuiltIn);
         AddEvent(uc);
     }
 
-    public static Role Initialize(Guid tenantId, Guid principalId, Guid roleId, string name, List<string> actions,
-        List<string> notActions,
+    public static Role Initialize(Guid tenantId, Guid principalId, Guid roleId, string name, List<RoleAction> actions,
+        List<RoleAction> notActions,
         string description = "", bool isBuiltIn = true)
     {
         return new Role(tenantId, principalId, roleId, name, actions, notActions, description, isBuiltIn);
@@ -32,8 +32,8 @@ public class Role : TenantAggregateRoot<Guid, Role, Guid, Guid>
     public string Name { get; private set; }
     public string Description { get; private set; }
     public bool IsBuiltIn { get; private set; }
-    public List<string> Actions { get; private set; }
-    public List<string> NotActions { get; private set; }
+    public List<RoleAction> Actions { get; private set; }
+    public List<RoleAction> NotActions { get; private set; }
     
     private readonly List<RoleAssignment> _roleAssignments = new();
     public IReadOnlyCollection<RoleAssignment> RoleAssignments => _roleAssignments.ToImmutableArray();

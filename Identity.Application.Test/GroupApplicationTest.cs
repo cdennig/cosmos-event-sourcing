@@ -142,7 +142,7 @@ public class GroupApplicationTest : IClassFixture<GroupApplicationTestFixture>
         Assert.NotNull(group);
         Assert.Equal(0, group.GroupMembers.Count);
     }
-    
+
     [Fact]
     async void Test_0006_Remove_Invalid_Member()
     {
@@ -172,5 +172,49 @@ public class GroupApplicationTest : IClassFixture<GroupApplicationTestFixture>
         group = await ReadGroupAsync(_fixture.TenantId, groupId);
         Assert.NotNull(group);
         Assert.Equal(1, group.GroupMembers.Count);
+    }
+
+    [Fact]
+    async void Test_0007_Update_GeneralInformation()
+    {
+        var groupId = await CreateGroupAsync();
+
+        await _fixture.CurrentMediator.Send(new UpdateGeneralInformationGroupCommand()
+        {
+            TenantId = _fixture.TenantId,
+            PrincipalId = _fixture.PrincipalId,
+            Id = groupId,
+            Name = "Update Group",
+            Description = "Update Group",
+            PictureUri = "https://example.com/update.jpg"
+        });
+
+        var group = await ReadGroupAsync(_fixture.TenantId, groupId);
+        Assert.NotNull(group);
+        Assert.Equal("Update Group", group.Name);
+        Assert.Equal("Update Group", group.Description);
+        Assert.Equal("https://example.com/update.jpg", group.PictureUri);
+    }
+
+
+    [Fact]
+    async void Test_0008_Update_GeneralInformation_Validation_Failure()
+    {
+        var groupId = await CreateGroupAsync();
+
+        var func = async () =>
+        {
+            await _fixture.CurrentMediator.Send(new UpdateGeneralInformationGroupCommand()
+            {
+                TenantId = _fixture.TenantId,
+                PrincipalId = _fixture.PrincipalId,
+                Id = groupId,
+                Name = "",
+                Description = "Update Group",
+                PictureUri = "https://example.com/update.jpg"
+            });
+        };
+
+        await Assert.ThrowsAsync<ValidationException>(func);
     }
 }

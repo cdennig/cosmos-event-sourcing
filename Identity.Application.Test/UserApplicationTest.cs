@@ -183,4 +183,47 @@ public class UserApplicationTest : IClassFixture<UserApplicationTestFixture>
 
         await Assert.ThrowsAsync<ValidationException>(func);
     }
+
+
+    [Fact]
+    async void Test_0010_Delete_User()
+    {
+        var userId = await CreateUserAsync();
+
+        var res = await _fixture.CurrentMediator.Send(new DeleteUserCommand()
+        {
+            PrincipalId = _fixture.PrincipalId,
+            Id = userId
+        });
+
+        var user = await ReadUserAsync(userId);
+        Assert.NotNull(user);
+        Assert.True(user.Deleted);
+    }
+
+    [Fact]
+    async void Test_0010_Undelete_User()
+    {
+        var userId = await CreateUserAsync();
+
+        await _fixture.CurrentMediator.Send(new DeleteUserCommand()
+        {
+            PrincipalId = _fixture.PrincipalId,
+            Id = userId
+        });
+
+        var user = await ReadUserAsync(userId);
+        Assert.NotNull(user);
+        Assert.True(user.Deleted);
+
+        await _fixture.CurrentMediator.Send(new UndeleteUserCommand()
+        {
+            PrincipalId = _fixture.PrincipalId,
+            Id = userId
+        });
+
+        user = await ReadUserAsync(userId);
+        Assert.NotNull(user);
+        Assert.False(user.Deleted);
+    }
 }

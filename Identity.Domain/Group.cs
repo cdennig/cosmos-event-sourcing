@@ -71,7 +71,7 @@ public class Group : TenantAggregateRoot<Guid, Group, Guid, Guid>
         var gmr = new GroupMemberRemoved(this, by, memberPrincipalId);
         AddEvent(gmr);
     }
-    
+
     public void DeleteGroup(Guid by)
     {
         if (Deleted)
@@ -101,6 +101,7 @@ public class Group : TenantAggregateRoot<Guid, Group, Guid, Guid>
     {
         Name = groupGeneralInformationUpdated.Name;
         Description = groupGeneralInformationUpdated.Description;
+        PictureUri = groupGeneralInformationUpdated.PictureUri;
         ModifiedAt = groupGeneralInformationUpdated.Timestamp;
         ModifiedBy = groupGeneralInformationUpdated.RaisedBy;
     }
@@ -123,14 +124,14 @@ public class Group : TenantAggregateRoot<Guid, Group, Guid, Guid>
             ModifiedBy = groupMemberRemoved.RaisedBy;
         }
     }
-    
+
     private void ApplyEvent(GroupDeleted groupDeleted)
     {
         Deleted = true;
         DeletedAt = groupDeleted.Timestamp;
         DeletedBy = groupDeleted.RaisedBy;
     }
-    
+
     private void ApplyEvent(GroupUndeleted groupUndeleted)
     {
         Deleted = false;

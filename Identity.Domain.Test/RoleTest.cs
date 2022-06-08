@@ -14,8 +14,8 @@ public class RoleTest
         var createdBy = Guid.NewGuid();
         var tenantId = Guid.NewGuid();
         var newRoleId = Guid.NewGuid();
-        var u = Role.Initialize(tenantId, createdBy, newRoleId, "Administrator Role", new List<string>(),
-            new List<string>(), "", true);
+        var u = Role.Initialize(tenantId, createdBy, newRoleId, "Administrator Role", new List<RoleAction>(),
+            new List<RoleAction>(), "", true);
         Assert.Equal(u.DomainEvents.Last().Timestamp, u.CreatedAt);
         Assert.Equal(u.DomainEvents.Last().RaisedBy, u.CreatedBy);
         Assert.Equal("Administrator Role", u.Name);
@@ -29,8 +29,8 @@ public class RoleTest
         var createdBy = Guid.NewGuid();
         var tenantId = Guid.NewGuid();
         var newRoleId = Guid.NewGuid();
-        var u = Role.Initialize(tenantId, createdBy, newRoleId, "Administrator Role", new List<string>(),
-            new List<string>(), "", true);
+        var u = Role.Initialize(tenantId, createdBy, newRoleId, "Administrator Role", new List<RoleAction>(),
+            new List<RoleAction>(), "", true);
         u.UpdateGeneralInformation(createdBy, "Admins", "Admin Role");
         Assert.Equal(u.DomainEvents.Last().Timestamp, u.ModifiedAt);
         Assert.Equal(u.DomainEvents.Last().RaisedBy, u.ModifiedBy);
@@ -45,8 +45,8 @@ public class RoleTest
         var tenantId = Guid.NewGuid();
         var newRoleId = Guid.NewGuid();
         var groupId = Guid.NewGuid();
-        var u = Role.Initialize(tenantId, createdBy, newRoleId, "Administrator Role", new List<string>(),
-            new List<string>(), "", true);
+        var u = Role.Initialize(tenantId, createdBy, newRoleId, "Administrator Role", new List<RoleAction>(),
+            new List<RoleAction>(), "", true);
         u.AssignRoleToGroup(createdBy, groupId);
         Assert.Equal(u.DomainEvents.Last().Timestamp, u.ModifiedAt);
         Assert.Equal(u.DomainEvents.Last().RaisedBy, u.ModifiedBy);
@@ -62,13 +62,12 @@ public class RoleTest
         var tenantId = Guid.NewGuid();
         var newRoleId = Guid.NewGuid();
         var groupId = Guid.NewGuid();
-        var u = Role.Initialize(tenantId, createdBy, newRoleId, "Administrator Role", new List<string>(),
-            new List<string>(), "", true);
+        var u = Role.Initialize(tenantId, createdBy, newRoleId, "Administrator Role", new List<RoleAction>(),
+            new List<RoleAction>(), "", true);
         u.AssignRoleToGroup(createdBy, groupId);
         u.RemoveRoleFromGroup(createdBy, groupId);
         Assert.Equal(u.DomainEvents.Last().Timestamp, u.ModifiedAt);
         Assert.Equal(u.DomainEvents.Last().RaisedBy, u.ModifiedBy);
         Assert.Equal(0, u.RoleAssignments.Count);
     }
-
 }
