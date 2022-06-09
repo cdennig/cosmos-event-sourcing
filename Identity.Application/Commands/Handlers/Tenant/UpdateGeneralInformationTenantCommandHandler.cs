@@ -21,7 +21,8 @@ public class UpdateGeneralInformationTenantCommandHandler : IRequestHandler<Upda
     {
         var tenant = await _repository.RehydrateAsync(request.Id, cancellationToken);
         tenant.UpdateGeneralInformation(request.PrincipalId, request.Name, request.Description, request.PictureUri);
-
+        await _repository.AppendAsync(tenant, cancellationToken);
+        
         return new UpdateGeneralInformationTenantCommandResponse(tenant.Id, tenant.Version, tenant.ResourceId);
     }
 }

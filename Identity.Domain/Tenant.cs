@@ -44,6 +44,8 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
     public Guid? PrimaryContact { get; private set; }
     public Guid? AdminGroup { get; private set; }
     public Guid? UsersGroup { get; private set; }
+    public Guid? AdminRole { get; private set; }
+    public Guid? UsersRole { get; private set; }
     public TenantStatus Status { get; private set; }
 
     private bool IsWritable()
@@ -85,15 +87,17 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
         AddEvent(primaryContactSet);
     }
 
-    public void SetDirectoryCreated(Guid by, Guid adminGroupId, Guid usersGroupId)
+    public void SetDirectoryCreated(Guid by, Guid adminGroupId, Guid usersGroupId, Guid adminRole, Guid usersRole)
     {
         if (!IsWritable())
             throw new AggregateReadOnlyException("Tenant readonly");
-        if (AdminGroup != null || UsersGroup != null)
+        if (AdminGroup != null || UsersGroup != null || AdminRole != null || UsersRole != null)
         {
             throw new ArgumentException("Tenant Directory already created.");
         }
-        var tenantDirectoryCreated = new TenantDirectoryCreated(this, by, adminGroupId, usersGroupId);
+
+        var tenantDirectoryCreated =
+            new TenantDirectoryCreated(this, by, adminGroupId, usersGroupId, adminRole, usersRole);
         AddEvent(tenantDirectoryCreated);
     }
 
@@ -152,5 +156,7 @@ public class Tenant : AggregateRoot<Tenant, Guid, Guid>
         Status |= TenantStatus.DirectoryCreated;
         AdminGroup = tenantDirectoryCreated.AdminGroupId;
         UsersGroup = tenantDirectoryCreated.UsersGroupId;
+        AdminRole = tenantDirectoryCreated.AdminRoleId;
+        UsersRole = tenantDirectoryCreated.UsersRoleId;
     }
 }

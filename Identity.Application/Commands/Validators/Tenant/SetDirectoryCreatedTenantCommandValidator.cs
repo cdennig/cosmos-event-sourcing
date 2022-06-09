@@ -11,5 +11,7 @@ public class SetDirectoryCreatedTenantCommandValidator : AbstractValidator<SetDi
         RuleFor(x => x.Id).NotNull().NotEqual(Guid.Empty);
         RuleFor(x => x.AdminGroupId).NotNull().NotEqual(Guid.Empty);
         RuleFor(x => x.UsersGroupId).NotNull().NotEqual(Guid.Empty);
+        RuleFor(x => x.AdminRoleId).NotNull().NotEqual(Guid.Empty);
+        RuleFor(x => x.UsersRoleId).NotNull().NotEqual(Guid.Empty);
     }
 }

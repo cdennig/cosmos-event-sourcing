@@ -9,4 +9,6 @@ public class SetDirectoryCreatedTenantCommand : IRequest<SetDirectoryCreatedTena
     public Guid Id { get; set; }
     public Guid AdminGroupId { get; set; }
     public Guid UsersGroupId { get; set; }
+    public Guid AdminRoleId { get; set; }
+    public Guid UsersRoleId { get; set; }
 }

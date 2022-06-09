@@ -28,6 +28,7 @@ public class SetPrimaryContactTenantCommandHandler : IRequestHandler<SetPrimaryC
         }
         var tenant = await _repository.RehydrateAsync(request.Id, cancellationToken);
         tenant.SetPrimaryContact(request.PrincipalId, request.ContactId);
+        await _repository.AppendAsync(tenant, cancellationToken);
 
         return new SetPrimaryContactTenantCommandResponse(tenant.Id, tenant.Version, tenant.ResourceId);
     }

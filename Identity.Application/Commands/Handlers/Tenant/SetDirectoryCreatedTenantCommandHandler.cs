@@ -20,7 +20,9 @@ public class SetDirectoryCreatedTenantCommandHandler : IRequestHandler<SetDirect
         CancellationToken cancellationToken = default)
     {
         var tenant = await _repository.RehydrateAsync(request.Id, cancellationToken);
-        tenant.SetDirectoryCreated(request.PrincipalId, request.AdminGroupId, request.UsersGroupId);
+        tenant.SetDirectoryCreated(request.PrincipalId, request.AdminGroupId, request.UsersGroupId, request.AdminRoleId,
+            request.UsersRoleId);
+        await _repository.AppendAsync(tenant, cancellationToken);
 
         return new SetDirectoryCreatedTenantCommandResponse(tenant.Id, tenant.Version, tenant.ResourceId);
     }

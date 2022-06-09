@@ -21,7 +21,8 @@ public class UpdateLocationTenantCommandHandler : IRequestHandler<UpdateLocation
     {
         var tenant = await _repository.RehydrateAsync(request.Id, cancellationToken);
         tenant.UpdateLocation(request.PrincipalId, request.Location);
-
+        await _repository.AppendAsync(tenant, cancellationToken);
+        
         return new UpdateLocationTenantCommandResponse(tenant.Id, tenant.Version, tenant.ResourceId);
     }
 }

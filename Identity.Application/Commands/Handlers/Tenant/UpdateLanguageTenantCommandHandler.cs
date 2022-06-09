@@ -21,7 +21,8 @@ public class UpdateLanguageTenantCommandHandler : IRequestHandler<UpdateLanguage
     {
         var tenant = await _repository.RehydrateAsync(request.Id, cancellationToken);
         tenant.UpdateLanguage(request.PrincipalId, request.Language);
-
+        await _repository.AppendAsync(tenant, cancellationToken);
+        
         return new UpdateLanguageTenantCommandResponse(tenant.Id, tenant.Version, tenant.ResourceId);
     }
 }
