@@ -1,7 +1,9 @@
 ﻿using System;
 using ES.Infrastructure.Behaviors;
+using ES.Infrastructure.Cache;
 using ES.Infrastructure.Repository;
 using ES.Shared.Aggregate;
+using ES.Shared.Cache;
 using ES.Shared.Repository;
 using FluentValidation;
 using MediatR;
@@ -27,11 +29,14 @@ public class TestFixture : IDisposable
     {
         var serviceConfig = new MediatRServiceConfiguration();
         var services = new ServiceCollection()
+            .AddEasyCaching(options => { options.UseInMemory("memory"); })
+            .AddSingleton<ICache, InMemoryCache>()
             .AddSingleton<ITenantAggregateRootFactory<Guid, Project, Guid, Guid>>(
                 new TenantAggregateRootFactory<Guid, Project, Guid, Guid>())
             .AddScoped<ITenantEventsRepository<Guid, Project, Guid, Guid>,
                 InMemoryTenantEventsRepository<Guid, Project, Guid, Guid>>()
             .AddValidatorsFromAssembly(typeof(CreateProjectCommand).Assembly)
+            .AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingPipelineBehavior<,>))
             .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>))
             .AddScoped<IRequestHandler<CreateProjectCommand, CreateProjectCommandResponse>,
                 CreateProjectCommandHandler>()

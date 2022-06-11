@@ -3,7 +3,6 @@ using ES.Shared.Aggregate;
 using ES.Shared.Events;
 using ES.Shared.Exceptions;
 using Identity.Domain.Events.Role;
-using Identity.Domain.Events.Tenant;
 
 namespace Identity.Domain;
 

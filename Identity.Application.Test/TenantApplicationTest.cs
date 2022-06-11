@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using FluentValidation;
-using Identity.Application.Commands.Role;
 using Identity.Application.Commands.Tenant;
 using Identity.Domain;
 using Xunit;

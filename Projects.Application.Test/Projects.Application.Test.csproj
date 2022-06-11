@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="EasyCaching.InMemory" Version="1.6.0" />
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.0.2" />
         <PackageReference Include="MediatR" Version="10.0.1" />
         <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />

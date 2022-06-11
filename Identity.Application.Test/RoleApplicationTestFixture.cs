@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using ES.Infrastructure.Behaviors;
+using ES.Infrastructure.Cache;
 using ES.Infrastructure.Repository;
 using ES.Shared.Aggregate;
+using ES.Shared.Cache;
 using ES.Shared.Repository;
 using FluentValidation;
 using Identity.Application.Commands.Handlers.Group;
@@ -37,6 +39,8 @@ public class RoleApplicationTestFixture : IDisposable
     {
         var serviceConfig = new MediatRServiceConfiguration();
         var services = new ServiceCollection()
+            .AddEasyCaching(options => { options.UseInMemory("memory"); })
+            .AddSingleton<ICache, InMemoryCache>()
             .AddSingleton<ITenantAggregateRootFactory<Guid, Domain.Role, Guid, Guid>>(
                 new TenantAggregateRootFactory<Guid, Domain.Role, Guid, Guid>())
             .AddSingleton<ITenantAggregateRootFactory<Guid, Domain.Group, Guid, Guid>>(
@@ -54,6 +58,7 @@ public class RoleApplicationTestFixture : IDisposable
             .AddValidatorsFromAssembly(typeof(CreateRoleCommand).Assembly)
             .AddValidatorsFromAssembly(typeof(CreateGroupCommand).Assembly)
             .AddValidatorsFromAssembly(typeof(CreateUserCommand).Assembly)
+            .AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingPipelineBehavior<,>))
             .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>))
             .AddScoped<IRequestHandler<CreateUserCommand, CreateUserCommandResponse>, CreateUserCommandHandler>()
             .AddScoped<IRequestHandler<ConfirmUserCommand, ConfirmUserCommandResponse>, ConfirmUserCommandHandler>()

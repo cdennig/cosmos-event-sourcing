@@ -5,7 +5,6 @@ using ES.Shared.Aggregate;
 using ES.Shared.Events;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
-using Projects.Domain;
 
 namespace ES.Infrastructure.Test;
 

@@ -1,6 +1,5 @@
 ﻿using ES.Shared.Attributes;
 using ES.Shared.Events;
-using Newtonsoft.Json;
 
 namespace Identity.Domain.Events.Group;
 

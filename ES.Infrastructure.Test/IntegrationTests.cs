@@ -1,8 +1,4 @@
-﻿using System;
-using Projects.Domain;
-using ES.Infrastructure.Repository;
-using Identity.Domain;
-using Xunit;
+﻿using Xunit;
 
 namespace ES.Infrastructure.Test;
 
