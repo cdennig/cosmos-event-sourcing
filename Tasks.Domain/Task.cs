@@ -19,6 +19,8 @@ public class Task : TenantAggregateRoot<Guid, Task, Guid, Guid>
     // ...in minutes
     public ulong TimeEstimation { get; private set; }
 
+    public long TimeRemaining => (long)TimeEstimation - _timeLogEntries.Sum(w => (long)w.Duration);
+
     private readonly List<TimeLogEntry> _timeLogEntries = new();
 
     public IReadOnlyCollection<TimeLogEntry> TimeLogEntries =>
