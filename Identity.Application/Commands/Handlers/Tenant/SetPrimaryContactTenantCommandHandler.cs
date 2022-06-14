@@ -32,7 +32,7 @@ public class SetPrimaryContactTenantCommandHandler : IRequestHandler<SetPrimaryC
         {
             _logger.LogWarning("Contact {PrimaryContactId} is not valid as primary contact for tenant {TenantId}",
                 request.PrincipalId, request.Id);
-            throw new Exception("User is not valid as primary contact");
+            throw new ArgumentException("User is not valid as primary contact");
         }
 
         var tenant = await _repository.RehydrateAsync(request.Id, cancellationToken);

@@ -31,7 +31,7 @@ public class AddMemberGroupCommandHandler : IRequestHandler<AddMemberGroupComman
         if (!await _userService.IsUserValidAsGroupMember(request.MemberId))
         {
             _logger.LogWarning("Member {MemberId} not valid as group member", request.MemberId);
-            throw new Exception("User is not valid as group member");
+            throw new ArgumentException("User is not valid as group member");
         }
 
         var group = await _repository.RehydrateAsync(request.TenantId, request.Id, cancellationToken);

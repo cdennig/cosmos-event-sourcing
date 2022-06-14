@@ -31,7 +31,7 @@ public class AssignRoleToGroupCommandHandler : IRequestHandler<AssignRoleToGroup
         if (!await _groupService.IsGroupValidForRoleAssignment(request.TenantId, request.GroupId))
         {
             _logger.LogWarning("Group {GroupId} not valid for role assignment", request.GroupId);
-            throw new Exception("Group is not valid for role assignment");
+            throw new ArgumentException("Group is not valid for role assignment");
         }
 
         var role = await _repository.RehydrateAsync(request.TenantId, request.Id, cancellationToken);
