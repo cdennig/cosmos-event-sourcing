@@ -109,7 +109,7 @@ public class GroupApplicationTest : IClassFixture<GroupApplicationTestFixture>
             return res;
         };
 
-        await Assert.ThrowsAsync<Exception>(func);
+        await Assert.ThrowsAsync<ArgumentException>(func);
     }
 
     [Fact]
