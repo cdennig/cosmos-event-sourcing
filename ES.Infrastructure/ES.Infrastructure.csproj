@@ -10,7 +10,7 @@
       <PackageReference Include="EasyCaching.Core" Version="1.6.0" />
       <PackageReference Include="EasyCaching.InMemory" Version="1.6.0" />
       <PackageReference Include="EasyCaching.Redis" Version="1.6.0" />
-      <PackageReference Include="FluentValidation" Version="11.0.2" />
+      <PackageReference Include="FluentValidation" Version="11.0.3" />
       <PackageReference Include="MediatR" Version="10.0.1" />
       <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.27.2" />
     </ItemGroup>

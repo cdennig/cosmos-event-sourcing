@@ -5,6 +5,7 @@ using ES.Shared.Aggregate;
 using ES.Shared.Events;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace ES.Infrastructure.Test;
 
@@ -44,10 +45,13 @@ public class IntegrationTestFixture : IDisposable
 
         var domainEventsFactory = new DomainEventsFactory<Guid, Guid>();
         domainEventsFactory.Initialize(new List<Type> { typeof(Identity.Domain.User) });
-        var aggregateRootFactory = new AggregateRootFactory<Identity.Domain.User, Guid, Guid>();
+        var loggerFactory = (ILoggerFactory)new LoggerFactory();
+        var logger = loggerFactory.CreateLogger<CosmosEventsRepository<Identity.Domain.User, Guid, Guid>>();
+        var arfLogger = loggerFactory.CreateLogger<AggregateRootFactory<Identity.Domain.User, Guid, Guid>>();
+        var aggregateRootFactory = new AggregateRootFactory<Identity.Domain.User, Guid, Guid>(arfLogger);
         Repository =
             new CosmosEventsRepository<Identity.Domain.User, Guid, Guid>(Container, domainEventsFactory,
-                aggregateRootFactory);
+                aggregateRootFactory, logger);
     }
 
     public void Dispose()

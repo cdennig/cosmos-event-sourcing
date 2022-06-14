@@ -29,31 +29,35 @@ public class InfrastructureTest : IClassFixture<TestFixture>
         p.PauseProject(_fixture.UserId);
         p.ResumeProject(_fixture.UserId);
         await _fixture.CurrentTenantRepo.AppendAsync(p);
+        Assert.Empty(p.DomainEvents);
     }
 
     [Fact]
     async void Test_0002_Rehydrate_InMemory()
     {
         var p = await _fixture.CurrentTenantRepo.RehydrateAsync(_fixture.TenantId, _fixture.CurrentId);
+        Assert.Empty(p.DomainEvents);
         Assert.Equal(ProjectPriority.High, p.Priority);
         Assert.Equal(_fixture.UserId, p.CreatedBy);
         Assert.Equal(_fixture.UserId, p.ModifiedBy);
     }
-    
+
     [Fact]
     async Task Test_0003_Append_InMemory()
     {
         var tenant = Tenant.Initialize(_fixture.UserId, _fixture.TenantId,
             "Test", "", "de-DE", "");
-        
+
         tenant.UpdateGeneralInformation(_fixture.UserId, "New Name", "New description", "");
         await _fixture.CurrentRepo.AppendAsync(tenant);
+        Assert.Empty(tenant.DomainEvents);
     }
-    
+
     [Fact]
     async void Test_0004_Rehydrate_InMemory()
     {
         var p = await _fixture.CurrentRepo.RehydrateAsync(_fixture.TenantId);
+        Assert.Empty(p.DomainEvents);
         Assert.Equal("New Name", p.Name);
         Assert.Equal(_fixture.UserId, p.CreatedBy);
         Assert.Equal(_fixture.UserId, p.ModifiedBy);

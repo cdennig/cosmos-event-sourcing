@@ -1,5 +1,4 @@
-﻿using System;
-using ES.Infrastructure.Behaviors;
+﻿using ES.Infrastructure.Behaviors;
 using ES.Infrastructure.Cache;
 using ES.Infrastructure.Repository;
 using ES.Shared.Aggregate;
@@ -12,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Tasks.Application.Commands;
 using Tasks.Application.Commands.Handlers;
 using Tasks.Application.Commands.Responses;
-using Tasks.Domain;
 
 namespace Tasks.Application.Test;
 
@@ -30,9 +28,10 @@ public class TestFixture : IDisposable
         var serviceConfig = new MediatRServiceConfiguration();
         var services = new ServiceCollection()
             .AddEasyCaching(options => { options.UseInMemory("memory"); })
+            .AddLogging()
             .AddSingleton<ICache, InMemoryCache>()
-            .AddSingleton<ITenantAggregateRootFactory<Guid, Domain.Task, Guid, Guid>>(
-                new TenantAggregateRootFactory<Guid, Domain.Task, Guid, Guid>())
+            .AddSingleton<ITenantAggregateRootFactory<Guid, Domain.Task, Guid, Guid>,
+                TenantAggregateRootFactory<Guid, Domain.Task, Guid, Guid>>()
             .AddScoped<ITenantEventsRepository<Guid, Domain.Task, Guid, Guid>,
                 InMemoryTenantEventsRepository<Guid, Domain.Task, Guid, Guid>>()
             .AddValidatorsFromAssembly(typeof(CreateTaskCommand).Assembly)

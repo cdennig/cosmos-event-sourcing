@@ -340,13 +340,13 @@ public class ApplicationTest : IClassFixture<TestFixture>
         Assert.Equal(title, p.Title);
         Assert.Equal(description, p.Description);
     }
-    
+
     [Fact]
     async void Test_0014_Task_Set_TimeEstimation()
     {
         var resCreate = await CreateTaskAsync();
         var te = 140UL;
-        
+
         await _fixture.CurrentMediator.Send(new SetTimeEstimationTaskCommand()
         {
             PrincipalId = _fixture.PrincipalId,
@@ -359,4 +359,90 @@ public class ApplicationTest : IClassFixture<TestFixture>
         Assert.Equal(te, p.TimeEstimation);
     }
 
+    [Fact]
+    async void Test_0015_Task_TimeRemaining()
+    {
+        var resCreate = await CreateTaskAsync();
+        var te = 140UL;
+
+        await _fixture.CurrentMediator.Send(new SetTimeEstimationTaskCommand()
+        {
+            PrincipalId = _fixture.PrincipalId,
+            TenantId = _fixture.TenantId,
+            Id = resCreate,
+            Estimation = te
+        });
+
+        var p = await ReadTaskFromRepo(_fixture.TenantId, resCreate);
+        Assert.Equal(te, p.TimeEstimation);
+
+        var day = DateOnly.FromDateTime(DateTime.Now);
+
+        await _fixture.CurrentMediator.Send(new LogTimeTaskCommand()
+        {
+            PrincipalId = _fixture.PrincipalId,
+            TenantId = _fixture.TenantId,
+            Id = resCreate,
+            Comment = "First time log entry",
+            Day = day,
+            Duration = 120
+        });
+
+        p = await ReadTaskFromRepo(_fixture.TenantId, resCreate);
+        Assert.Equal(20L, p.TimeRemaining);
+    }
+
+    [Fact]
+    async void Test_0016_Task_TimeRemaining_Negative()
+    {
+        var resCreate = await CreateTaskAsync();
+        var te = 140UL;
+
+        await _fixture.CurrentMediator.Send(new SetTimeEstimationTaskCommand()
+        {
+            PrincipalId = _fixture.PrincipalId,
+            TenantId = _fixture.TenantId,
+            Id = resCreate,
+            Estimation = te
+        });
+
+        var p = await ReadTaskFromRepo(_fixture.TenantId, resCreate);
+        Assert.Equal(te, p.TimeEstimation);
+
+        var day = DateOnly.FromDateTime(DateTime.Now);
+
+        await _fixture.CurrentMediator.Send(new LogTimeTaskCommand()
+        {
+            PrincipalId = _fixture.PrincipalId,
+            TenantId = _fixture.TenantId,
+            Id = resCreate,
+            Comment = "First time log entry",
+            Day = day,
+            Duration = 160
+        });
+
+        p = await ReadTaskFromRepo(_fixture.TenantId, resCreate);
+        Assert.Equal(-20L, p.TimeRemaining);
+    }
+    
+    
+    [Fact]
+    async void Test_0017_Task_TimeRemaining_NoEstimation()
+    {
+        var resCreate = await CreateTaskAsync();
+        var day = DateOnly.FromDateTime(DateTime.Now);
+
+        await _fixture.CurrentMediator.Send(new LogTimeTaskCommand()
+        {
+            PrincipalId = _fixture.PrincipalId,
+            TenantId = _fixture.TenantId,
+            Id = resCreate,
+            Comment = "First time log entry",
+            Day = day,
+            Duration = 160
+        });
+
+        var p = await ReadTaskFromRepo(_fixture.TenantId, resCreate);
+        Assert.Equal(-160L, p.TimeRemaining);
+    }
 }

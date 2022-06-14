@@ -40,13 +40,14 @@ public class RoleApplicationTestFixture : IDisposable
         var serviceConfig = new MediatRServiceConfiguration();
         var services = new ServiceCollection()
             .AddEasyCaching(options => { options.UseInMemory("memory"); })
+            .AddLogging()
             .AddSingleton<ICache, InMemoryCache>()
-            .AddSingleton<ITenantAggregateRootFactory<Guid, Domain.Role, Guid, Guid>>(
-                new TenantAggregateRootFactory<Guid, Domain.Role, Guid, Guid>())
-            .AddSingleton<ITenantAggregateRootFactory<Guid, Domain.Group, Guid, Guid>>(
-                new TenantAggregateRootFactory<Guid, Domain.Group, Guid, Guid>())
-            .AddSingleton<IAggregateRootFactory<Domain.User, Guid, Guid>>(
-                new AggregateRootFactory<Domain.User, Guid, Guid>())
+            .AddSingleton<ITenantAggregateRootFactory<Guid, Domain.Role, Guid, Guid>,
+                TenantAggregateRootFactory<Guid, Domain.Role, Guid, Guid>>()
+            .AddSingleton<ITenantAggregateRootFactory<Guid, Domain.Group, Guid, Guid>,
+                TenantAggregateRootFactory<Guid, Domain.Group, Guid, Guid>>()
+            .AddSingleton<IAggregateRootFactory<Domain.User, Guid, Guid>,
+                AggregateRootFactory<Domain.User, Guid, Guid>>()
             .AddScoped<ITenantEventsRepository<Guid, Domain.Role, Guid, Guid>,
                 InMemoryTenantEventsRepository<Guid, Domain.Role, Guid, Guid>>()
             .AddScoped<ITenantEventsRepository<Guid, Domain.Group, Guid, Guid>,
@@ -79,7 +80,7 @@ public class RoleApplicationTestFixture : IDisposable
         CurrentValidUser = CreateUserAsync().GetAwaiter().GetResult();
         CurrentValidGroup = CreateGroupAsync().GetAwaiter().GetResult();
     }
-    
+
     private async Task<Guid> CreateUserAsync()
     {
         var res = await CurrentMediator.Send(new CreateUserCommand()
@@ -100,8 +101,8 @@ public class RoleApplicationTestFixture : IDisposable
 
         return res.Id;
     }
-    
-    
+
+
     private async Task<Guid> CreateGroupAsync()
     {
         var res = await CurrentMediator.Send(new CreateGroupCommand()

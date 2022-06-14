@@ -1,8 +1,8 @@
 ﻿using ES.Shared.Repository;
 using Identity.Application.Commands.Role;
 using Identity.Application.Commands.Responses.Role;
-using Identity.Application.Services;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Identity.Application.Commands.Handlers.Role;
 
@@ -10,26 +10,26 @@ public class RemoveRoleFromGroupCommandHandler : IRequestHandler<RemoveRoleFromG
     RemoveRoleFromGroupCommandResponse>
 {
     private readonly ITenantEventsRepository<Guid, Domain.Role, Guid, Guid> _repository;
-    private readonly IGroupService _groupService;
+    private readonly ILogger<AssignRoleToGroupCommandHandler> _logger;
 
     public RemoveRoleFromGroupCommandHandler(
-        ITenantEventsRepository<Guid, Domain.Role, Guid, Guid> repository, IGroupService groupService)
+        ITenantEventsRepository<Guid, Domain.Role, Guid, Guid> repository,
+        ILogger<AssignRoleToGroupCommandHandler> logger)
     {
         _repository = repository;
-        _groupService = groupService;
+        _logger = logger;
     }
 
     public async Task<RemoveRoleFromGroupCommandResponse> Handle(RemoveRoleFromGroupCommand request,
         CancellationToken cancellationToken)
     {
-        if (!await _groupService.IsGroupValidForRoleAssignment(request.TenantId, request.GroupId))
-        {
-            throw new Exception("Group is not valid for role assignment");
-        }
-
+        _logger.LogInformation("Removing role {RoleId} from group {GroupId} / tenant {TenantId}", request.Id,
+            request.GroupId, request.TenantId);
         var role = await _repository.RehydrateAsync(request.TenantId, request.Id, cancellationToken);
         role.RemoveRoleFromGroup(request.PrincipalId, request.GroupId);
         await _repository.AppendAsync(role, cancellationToken);
+        _logger.LogInformation("Removed role {RoleId} from group {GroupId} / tenant {TenantId}", request.Id,
+            request.GroupId, request.TenantId);
         return new RemoveRoleFromGroupCommandResponse(request.TenantId, role.Id, role.Version, role.ResourceId);
     }
 }

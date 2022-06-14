@@ -4,6 +4,7 @@ using ES.Infrastructure.Repository;
 using ES.Shared.Aggregate;
 using ES.Shared.Repository;
 using Identity.Domain;
+using Microsoft.Extensions.Logging;
 
 namespace Identity.Application.Test;
 
@@ -17,9 +18,12 @@ public class GroupServiceTestFixture : IDisposable
 
     public GroupServiceTestFixture()
     {
+        var loggerFactory = (ILoggerFactory)new LoggerFactory();
+        var logger = loggerFactory.CreateLogger<InMemoryTenantEventsRepository<Guid, Group, Guid, Guid>>();
+        var tarfLogger = loggerFactory.CreateLogger<TenantAggregateRootFactory<Guid, Group, Guid, Guid>>();
         CurrentRepo =
             new InMemoryTenantEventsRepository<Guid, Group, Guid, Guid>(
-                new TenantAggregateRootFactory<Guid, Group, Guid, Guid>());
+                new TenantAggregateRootFactory<Guid, Group, Guid, Guid>(tarfLogger), logger);
 
         CurrentValidGroupId = Guid.NewGuid();
         CurrentCreatedBy = Guid.NewGuid();

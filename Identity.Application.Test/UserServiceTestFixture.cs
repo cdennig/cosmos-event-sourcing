@@ -4,6 +4,7 @@ using ES.Infrastructure.Repository;
 using ES.Shared.Aggregate;
 using ES.Shared.Repository;
 using Identity.Domain;
+using Microsoft.Extensions.Logging;
 
 namespace Identity.Application.Test;
 
@@ -18,7 +19,12 @@ public class UserServiceTestFixture : IDisposable
 
     public UserServiceTestFixture()
     {
-        CurrentRepo = new InMemoryEventsRepository<User, Guid, Guid>(new AggregateRootFactory<User, Guid, Guid>());
+        var loggerFactory = (ILoggerFactory)new LoggerFactory();
+        var logger = loggerFactory.CreateLogger<InMemoryEventsRepository<User, Guid, Guid>>();
+        var arfLogger = loggerFactory.CreateLogger<AggregateRootFactory<User, Guid, Guid>>();
+        CurrentRepo =
+            new InMemoryEventsRepository<User, Guid, Guid>(new AggregateRootFactory<User, Guid, Guid>(arfLogger),
+                logger);
         CurrentValidUserId = Guid.NewGuid();
         CurrentCreatedBy = Guid.NewGuid();
         CurrentInValidUserId = Guid.NewGuid();

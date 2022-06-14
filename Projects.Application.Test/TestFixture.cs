@@ -30,9 +30,10 @@ public class TestFixture : IDisposable
         var serviceConfig = new MediatRServiceConfiguration();
         var services = new ServiceCollection()
             .AddEasyCaching(options => { options.UseInMemory("memory"); })
+            .AddLogging()
             .AddSingleton<ICache, InMemoryCache>()
-            .AddSingleton<ITenantAggregateRootFactory<Guid, Project, Guid, Guid>>(
-                new TenantAggregateRootFactory<Guid, Project, Guid, Guid>())
+            .AddSingleton<ITenantAggregateRootFactory<Guid, Project, Guid, Guid>,
+                TenantAggregateRootFactory<Guid, Project, Guid, Guid>>()
             .AddScoped<ITenantEventsRepository<Guid, Project, Guid, Guid>,
                 InMemoryTenantEventsRepository<Guid, Project, Guid, Guid>>()
             .AddValidatorsFromAssembly(typeof(CreateProjectCommand).Assembly)

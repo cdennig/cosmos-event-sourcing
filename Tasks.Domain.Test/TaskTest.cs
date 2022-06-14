@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using ES.Shared.Aggregate;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Tasks.Domain.Test;
@@ -160,7 +161,11 @@ public class TaskTest
         task.SetTimeEstimation(user, 960);
         var day = DateOnly.FromDateTime(DateTime.Now);
         task.LogTime(user, 180, "First time log entry", day);
-        var factory = new TenantAggregateRootFactory<Guid, Task, Guid, Guid>();
+
+        var loggerFactory = (ILoggerFactory)new LoggerFactory();
+        var logger = loggerFactory.CreateLogger<TenantAggregateRootFactory<Guid, Task, Guid, Guid>>();
+
+        var factory = new TenantAggregateRootFactory<Guid, Task, Guid, Guid>(logger);
         var newTask = factory.Create(tenantId, taskId, task.DomainEvents);
         Assert.Equal(task.TimeEstimation, newTask.TimeEstimation);
         Assert.Equal(newTask.TimeLogEntries.Count, task.TimeLogEntries.Count);

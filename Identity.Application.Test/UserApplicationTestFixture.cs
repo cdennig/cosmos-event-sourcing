@@ -29,9 +29,10 @@ public class UserApplicationTestFixture : IDisposable
         var serviceConfig = new MediatRServiceConfiguration();
         var services = new ServiceCollection()
             .AddEasyCaching(options => { options.UseInMemory("memory"); })
+            .AddLogging()
             .AddSingleton<ICache, InMemoryCache>()
-            .AddSingleton<IAggregateRootFactory<Domain.User, Guid, Guid>>(
-                new AggregateRootFactory<Domain.User, Guid, Guid>())
+            .AddSingleton<IAggregateRootFactory<Domain.User, Guid, Guid>,
+                AggregateRootFactory<Domain.User, Guid, Guid>>()
             .AddScoped<IEventsRepository<Domain.User, Guid, Guid>,
                 InMemoryEventsRepository<Domain.User, Guid, Guid>>()
             .AddValidatorsFromAssembly(typeof(CreateUserCommand).Assembly)

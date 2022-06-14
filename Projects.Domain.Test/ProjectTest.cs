@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using ES.Shared.Aggregate;
 using ES.Shared.Exceptions;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Projects.Domain.Test;
@@ -151,7 +152,11 @@ public class ProjectTest
         p.PauseProject(user);
         p.ResumeProject(user);
         p.FinishProject(user);
-        var factory = new TenantAggregateRootFactory<Guid, Project, Guid, Guid>();
+
+        var loggerFactory = (ILoggerFactory)new LoggerFactory();
+        var logger = loggerFactory.CreateLogger<TenantAggregateRootFactory<Guid, Project, Guid, Guid>>();
+        
+        var factory = new TenantAggregateRootFactory<Guid, Project, Guid, Guid>(logger);
         var pNew = factory.Create(p.TenantId, p.Id, p.DomainEvents);
         Assert.Equal(p.Status, pNew.Status);
         Assert.Equal(p.Description, pNew.Description);

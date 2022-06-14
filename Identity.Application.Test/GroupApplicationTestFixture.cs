@@ -35,11 +35,12 @@ public class GroupApplicationTestFixture : IDisposable
         var serviceConfig = new MediatRServiceConfiguration();
         var services = new ServiceCollection()
             .AddEasyCaching(options => { options.UseInMemory("memory"); })
+            .AddLogging()
             .AddSingleton<ICache, InMemoryCache>()
-            .AddSingleton<ITenantAggregateRootFactory<Guid, Domain.Group, Guid, Guid>>(
-                new TenantAggregateRootFactory<Guid, Domain.Group, Guid, Guid>())
-            .AddSingleton<IAggregateRootFactory<Domain.User, Guid, Guid>>(
-                new AggregateRootFactory<Domain.User, Guid, Guid>())
+            .AddSingleton<ITenantAggregateRootFactory<Guid, Domain.Group, Guid, Guid>,
+                TenantAggregateRootFactory<Guid, Domain.Group, Guid, Guid>>()
+            .AddSingleton<IAggregateRootFactory<Domain.User, Guid, Guid>,
+                AggregateRootFactory<Domain.User, Guid, Guid>>()
             .AddScoped<ITenantEventsRepository<Guid, Domain.Group, Guid, Guid>,
                 InMemoryTenantEventsRepository<Guid, Domain.Group, Guid, Guid>>()
             .AddScoped<IEventsRepository<Domain.User, Guid, Guid>,
@@ -67,7 +68,7 @@ public class GroupApplicationTestFixture : IDisposable
         CurrentRepo = Provider.GetService<ITenantEventsRepository<Guid, Domain.Group, Guid, Guid>>();
         CurerntValidUser = CreateUserAsync().GetAwaiter().GetResult();
     }
-    
+
     private async Task<Guid> CreateUserAsync()
     {
         var res = await CurrentMediator.Send(new CreateUserCommand()
