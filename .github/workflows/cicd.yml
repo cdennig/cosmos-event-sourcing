@@ -22,7 +22,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --configuration release --filter Category\!=Integration --logger "trx;LogFilePrefix=net6.0" --results-directory "${{ github.workspace }}/TestResults" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --no-build --verbosity normal
+      run: dotnet test --filter Category\!=Integration --logger "trx;LogFilePrefix=net6.0" --results-directory "${{ github.workspace }}/TestResults" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover --no-build --verbosity normal
     - name: Check test failure
       if: github.event_name == 'pull_request' && steps.tests.outcome != 'success'
       run: exit 1
